@@ -35,3 +35,56 @@ P(w_i|y) = total # of word i in class y emails / total # of words on class y ema
 - total number of parameters:
  - k(V-1)+(k-1)
 
+Discrete and continuous Features:
+- Naive  bayes canbe easily extended to handle features that are not binary-valued
+- Discrete: x_i \in {1,2,...,k_i}
+ - P(x_i = i| y) for j \in {1,2,...,k_j} - categorical distribution in place of bernouli
+- Continuous:
+ - Look at slides 
+
+Problem with MLE:
+- Suppose you picked up a new word "Mahalanobis" in your class and started using 
+  it in your email x
+- becauser the new word has never appeared before in training set
+ - this will force the email to be non spam
+ - solution is to remove this new word
+
+Example bernouli:
+- Given an unfair coin, we want to estimate \theta - the probability of head
+- we toss n times and see n_1 heads
+- MLE estimates: \theta = n_1/n
+
+Beta destribution:
+- p(\theta; \alpha,\beta) = 1/(B(\alpha,\beta))\theta^{\alpha-1}(1-\theta)^{\beta-1}
+- we chose \alpha and \beta value
+
+Posterior distribution of \theta
+- p(\theta | D) = \frac{p(D|\theta)P(\theta)}{p(D)}
+- derivation on slides
+- p(\theta|D) = \frac{1}{B(n_1 + \alpha, n_0 + \beta)} \theat^{n_1+\alpha - 1}(1-\theta)^{n_0 + \beta -1}
+- n_0 and n_1 are number of observed heads and tails
+- \alpha and \beta are posterior
+
+Maximum a-posterior MAP:
+- p(y|x) = \integral p(y|x,\theta)... look at slides
+
+MAP for bernouli:
+- look at slides
+- laplace estimation
+- laplace smoothing
+
+MAP estimation for Multi-nomial
+- The conjugate prior formultinomial is called dirichlet distribution
+- P(z=k) = frac{}{}
+
+Laplace Smoothing for multinomial case:
+- Look at slides
+
+Summary:
+- Generative
+ - learn P(x|y) and p(y)
+ - use bayes rule to compute P(y|x) for classification
+ - Predict with argmaxP(y|x) or use decision theory
+
+- Naive bayes assumes conditional independance
+ - Greatly reduces the number of parameters to learn
