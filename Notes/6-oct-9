@@ -1,0 +1,37 @@
+Naive bayes classifier continues:
+- Generative story for bernouli naive bayes
+ - if head, flip each of V spam coins, One per word
+ - if tails, flip each of V non-spam coins, One per word
+ - We do not really generate emails this way -- but this is what we assume to be 
+   the process how emails are generated
+
+Generative multinomial naive bayes: 
+- flip a weighted coin 
+- if head, roll the spam die M times and record the count for each of the v sides 
+- if tails roll te non spam die M times and record the count for each of the v sides
+
+Multinomial vs bernouli:
+- Bernouli:
+ - X_i \in {0,1}
+ - P(x|y) = \prod^v_{i=1} p(x_i|y)
+ - Single occurance is equivalent to multiple occurance
+- Multinomial:
+ - x_i \in N_0
+ - P(x|y) = p(y) \prod^v_{i=1} P(w_i|y)^{x_i} => w= word, x_i is count of how many times
+ - Multiple occurances make a difference. we take count into consideration
+
+MLE for NB with bernouli:
+- Given  a set of N training emails, MLE of the parameters are:
+ - P(y=1) = N_1/N where N_1 is the number of spams
+
+- for each feature i, learn a bernouli model for each class:
+ - P(x_i = 1| y = 1) = N_i|1 / N1, N_i|1 = # of spams the i-th word appear
+ - P(x_i = 1| y = 0) = N_i|0 / N_0
+
+MLE for naive bayes with Multi-nomial model
+- MLE estimate for the ith word in the dictionary
+P(w_i|y) = total # of word i in class y emails / total # of words on class y emails
+
+- total number of parameters:
+ - k(V-1)+(k-1)
+
