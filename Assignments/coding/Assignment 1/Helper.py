@@ -5,7 +5,7 @@ import sys
 import matplotlib.pyplot as plt
 import os
 
-class helper:
+class Helper:
 	def __init__(self,file1,file2,file3):
 		self.training_set = pd.read_csv(file1)
 		self.training_set=self.training_set.drop('dummy',1)
