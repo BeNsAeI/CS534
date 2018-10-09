@@ -88,3 +88,53 @@ Summary:
 
 - Naive bayes assumes conditional independance
  - Greatly reduces the number of parameters to learn
+___
+
+Linear classification models: Perceptron
+- Basic concept:
+- The perceptron algorithm
+- Perceptron loss/ hinge loss
+- Subgradient decent
+- Convergence proof of Perceptron
+- Concept of Margin
+- Voted and average Perceptron
+
+linear classifier:
+- w_1x_1 + w_2x_2 w_0 > 0 vs w_1x_1 + w_2x_2 w_0 < 0
+- plot vector: w_1x_1 + w_2x_2 w_0 = 0
+ - this is a perpendicular vector pointing to direction of positive
+ - scale does not matter
+ - we can scale it to any value
+
+- LR learns:
+ - P(y=1 | x) = 1/1+exp(-w^Tx)
+ - which yields a linear decision boundry w^Tx = 0
+
+- We will now look at a different paradigm
+
+Binary Classification: General setup
+- Given a set of training examplem (x_1,y_1),...,(x_n,y_n)
+- each c_i \R^d, y \in {-1,1}
+- linear function: w_0 + w_1x_1 + ... + w_dx_d
+- look at slides
+
+
+Loss function:
+- J(w) 1/n \sum^n_{m=16}L(g(w,x_m),y_m)
+ - where L(...) is the loss of g(...) given its true label y
+-0/1 loss
+ - L_{0/1}(g(...),y) = 1 if g(w,x) predicts wrong, 0 otherwise
+ - this is not achievable:
+  - piecewise, flat
+  - non convex: NP_Hard to optimize
+  - non-smooth: does not produce useful gradient since the surface of J_{0/1} p/w flat
+
+- Perceptron Loss:
+ - L_P(g(w,x),y) = max(0,yw^Tx)
+ - if it is correct: (prediction is positive)
+  - L_p = max(0,-yw^Tx) = 0
+ - if it is incorrect:(prediction is negative)
+  - L_p = max(0,yw^Tx) = yw^Tx
+ - loss is a linear function of weight
+
+J_P(w) = 1/n \sum^n_{m=1}max(0,-y_mw^Tx_m)
