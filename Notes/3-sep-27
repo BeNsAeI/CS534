@@ -1,0 +1,108 @@
+Probablistic interpretation of SSE:
+
+Maximum likelihood estimation 
+- Given an observation of some random variable, 
+  assuming the variable follow some fixed distribution, how to estimate the 
+  parameter?
+
+  - Coin tosses (Bernoulli)
+  - Dice or grades (discrete destribution)
+
+- M: We will use general term M as model
+- D: denotes data
+- D_n: nth example in set D
+- P(D;M): probability of observe data D given M
+- L(M) = P(D;M) = \pi^n_{m=1} P(D_m;M} <- use D_m instead because they are independant
+- l(M) = log L(M) = \sum^n_{m=1} log P(D_m;M)
+ * we use this for 2 reasons:
+  - small numbers multiplying make very small numbers, cause underflow issue
+  - Summation is computationally less intensive
+
+- M      if d_m is seen
+- 1 - M  if d_m is not observed
+
+ * P(D_m; M) = M^{D_m} (1-M)^{}
+
+- To maximize, take derivative of l(p) = n_1 logp + n_0 log(1-p)
+- dl(p)/dp = n_1/p - n_0 / (1-p)
+- set it to 0
+- solve for p = n_1/n
+- check second derivative, if + -> minima, if - -> maxima
+
+so for set n and probability p on a fair dice with n=6 sides, probability is:
+- \Pi^i _ {i = 1} p_i^{n_i}
+- = p_1^{n_1} * p_2^{n_2} * ... * p_6^{n_6}
+___
+
+in linear regression:
+ - L(w) = p(Y|X) = \pi^n_{i=1} p(y_i| x_i; w);
+ - Maxl =(w) = min 1/2 \sum^n_{i=1} (y_i - w^T x_i)^2
+
+___
+
+- leaner function \hat{y}(x) = w^T x
+- Chose a loss function
+- optimize 
+
+Over fitting 
+-> use less complex models, 
+-> use more training examples
+-> Regularization
+
+M = 0 -> 0.19 -> average (straigt line) constant output
+M = 1 -> 0.82, -1.27
+M = 3 -> 0.31, 7.99, -25.43, 17.37
+M = 9 -> values are wild because we are over fitting
+ * a small change in x, cause a large change in y
+
+___
+
+Regularization, penalizes the AI for wild changes
+- \sum^n_i=1(y_i - w^Tx_i)^2 + \lambda \sum^M_{j=1}|w_j|
+
+L2-> quadratic regularization:
+- \sum^n_i=1(y_i - w^Tx_i)^2 + \labda/2 w^Tw
+- w = (\lambda I + X^TX)^{-1}X^TY
+
+\lambda: regularization coefficient, which controls the trade-off between model
+         complexity and the fit to the data
+ - Large \lambda encourages simple model more w values become 0
+ - small \lambda encourages better fit for the data (drives SSE to 0)
+
+* if your model is overfitting -> look up regularization! \lamda to the rescue!
+___
+
+More regularization options:
+- \sum^n_i=1(y_i - w^Tx_i)^2 + \lambda \sum^M_{j=1}|w_j|^q
+- \sum^M_{j=1}|w_j|^q \leq \epsilon
+- q = 0.5, 1,2,4
+
+L-2 reqularization -> poly time closed form, Curbs overfitting but no sparse solution
+- \sum^n_i=1(y_i - w^Tx_i)^2 + \lambda \sum^M_{j=1}|w_j|2
+
+L-1 regularization -> poly time approximation, sparse solution- many zero w
+- \sum^n_i=1(y_i - w^Tx_i)^2 + \lambda \sum^M_{j=1}|w_j|
+
+L-0 regularization -> Seek to identify optimal features subset, NP-Complete
+- \sum^n_i=1(y_i - w^Tx_i)^2 + \lambda \sum^M_{j=1}I(w_j != 0)
+___
+
+Logistic regression:
+- Probabilistic prediction and decision theory
+- maximum likelyhood estimation application
+
+* it is for dealing with classification problems
+- X: the feature vector
+- y: the class label
+
+* binary linear classifier:
+- decision boundry is described a linear function
+- take linear regression and worp it between 0 to 1
+- w^Tx has a range of -\inf to +\inf
+- sigmoid maps values to 0 to 1
+ - we are using it as a conversion to turn it into probability
+- P(y = 1| x;w) = \sigma (w^Tx) = 1/1+exp(-W^Tx)
+- P(y = 0 | x;w) = 1 - \sigma (w^Tx)
+
+- if we have weights:
+ - y* = argmin \sum L(y,y') P(y'|x)

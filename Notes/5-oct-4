@@ -1,0 +1,87 @@
+Bayes and naive bayes classifiers:
+- Concept:
+ - Discriminative and generative concept
+ - naive assumption
+ - naive classifier
+ - Bernoulli and multi-nominal naive
+ - MLE and MAP smoothing
+
+- Discriminative:
+ - P(y|x) directly don't care about P(x)
+ - Log reg is one of such technique
+- Generative
+ - learn P(y) and P(x|y)
+ - Compute P(y|x) using bayes rule
+
+- P(y|x) = P(x|y)P(y)/P(x) = P(x|y)P(y)/\sum_y P(x,y)
+
+Simple generative example:
+- flip a coin to decide gender to decide gender of the indovidual
+- if   male sample weight and height N(\miu_m, \sum_m)
+- if female sample weight and height N(\miu_f, \sum_f) 
+___
+
+let's try to define a generative model for emails of two classes
+- How to represent email of M words as a feature vector?
+
+option 1:
+- with a dictionary of size V, x = [x_1,x_2,...,x_v] where x_i \in {0,1}
+ - 1 -> email contains the ith dictionary word
+ - 0 otherwise
+
+option 2:
+- with a dictionary of size V, x=[x_1,x_2,...,x_v] where x_i \in N_0
+ - x_i nonnegative integer determinning how many words show up
+___
+
+Look at slides why these two options are important
+___
+
+Generative model learns P(y) and P(x|y)
+prediction is made by: P(y|x) = P(x|y)P(y)/\sum_y P(x,y)
+ - P(x|y)P(y) = P(y|x)P(x)
+ - this is equivalent to factorization, joint conditional probability
+ - P(y) -> prior destribution of y
+ - P(y=1) portion of spams
+ - P(y=0) portion of non-spams
+
+P(x|y) the destribution of x given y
+ - P(x|y=1) -> destribution of a dictionary vector given y is spam
+ - P(x|y=0) -> destribution of a dictionary vector given y i not a spam
+
+ - learning P(x|y=1) or P(x|y=0) is a joint density estimation problem
+___
+
+- \hat{P}(row) = example matching row/total number of examples
+- we are learning if features A, B and C are available, what is the destribution
+  of vector features of the classes A, B and C
+___
+
+Given training data
+- learn P(y)
+- learn P(x|y=1),P(x|y=2),...,P(x|y=k))
+- compute P(y|x)
+
+- let x be a d-dimentional binary vector, and y \in {1,2,...,k}
+- Learn the joint distribution of F(x|y=i) for i = 1,...,k involves
+  estimating k \cross (2^d - 1) parameters
+- number of classes: k
+
+- for large d, this number is prohibitivle large and we have not enough data to
+  estiamte them accurately
+
+- a common example: no training example have the exact x = [u_1,...,u_k6] vector
+- we assign probability 0 to this examples
+
+Naive bayes assumption:
+- assume P(x_1,x_2,...x_2|y) = P(x_1|y)P(x_2|y)... P(x_d|y)
+- we are making dependant variables "conditionally" independant
+
+P(y|x) = P(x|y)P(y) / P(x) = \pi_i P(x_i|y)P(y) /[\sum_j(\pi_i|y=j)P(y=j)]
+ in naive if we have k classes and v features (dimentions) each v becomes a new class
+ -> k*v classes exist now
+ -> total estimation will be k*v + k-1 we still have to estimate ys which are k-1
+
+- the reason between naive and normal bayes is whether we have the computation or not
+- if we can afford non naive, then we will do not naive
+- embedded ai -> naive

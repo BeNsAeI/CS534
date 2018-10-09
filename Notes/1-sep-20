@@ -1,0 +1,166 @@
+September 20th 2018
+Class logistics:
+- Prof and Tas:
+ - Prof: Xiolin Fern
+ - TA: Hamed Shahbazi
+ - TA: Rasha Obeidat
+
+- Office hour:
+ - Xiolin: TR after class 1:20 to 2:00
+ - Hamed: TBD
+ - Rasha: WF 4:30 to 5:30
+
+- Website:
+ - Use canvas
+
+- Course material:
+ - A course in machine learning  by Hal Daume III
+ - Machine learning by Tom Mitchel
+ - Pattern recognition and ML by chris Bishop
+
+- Prereq:
+- Basic probability
+- Basic calc, multivariant calc
+- Linear algebra
+- Data structures, search strategies, Complexity
+- Know how to code(!)
+
+- Homework: Indovidual
+
+ - Written: analetical skills (10%)
+  - Help towards the exam
+  - only a subset of problems are graded
+
+ - Programming: Group of up to 3.
+  - implement learning algorithms on simulated or real data
+  - Perform experiments and report and analyze results
+  - answer questions
+
+ - Late policy: allowed up to 48 hours
+  - 24h: 10% deducted
+  - 48h: 25% deducted
+  - Case by case exception! talk to the professor
+
+- Final grade:
+ - Midterm 25%
+ - Final 25%
+ - Written homework: 10%
+ - Implementation: 30%
+ - Participation: 10%
+
+- Schedule is posted at the end of the week
+___
+
+- Whagt is machine learning studies algorithms that:
+ - improves performance P
+ - At some task T
+ - based on experience E
+
+- Machine learning in CS:
+ - Machine learning is already a prefered approach to:
+  - Speech recognition
+  - Natural language processing
+  - Computer Vision
+  - Robot control
+  - Recommender system
+  - Precision medicine
+  - ...
+
+ - This trend is growing
+  - Improved machine leearning algorithms
+  - Increased data capture and new sensors
+  - Increased data capture, and new sensors
+  - Increased computing power
+  - Increasing demand for self-costumization to user and environment
+
+- Topics:
+ - Supervised learning
+ - Semi-Supervised learning
+ - Unsupervised Learning
+ - Reinforcement learning
+
+- Supervised Learning:
+ - Learn to predict output based on input
+ - supervised: because we learn from the I/O data
+  - Example outputs:
+   - Continuous: refression problem (estimate house price)
+   - Discreate: classification problems (spam filter, loan, etc)
+   - Structured: Structured prediction problems (speach tagging)
+
+- Unsupervised learning:
+ - Only get the input
+ - Given a collection of examples (objects), discover self-similar groups within
+   data clustering
+ - Examples:
+  - Segmentation
+ - Learn underlaying distribution that generates the data we observe 
+  - density estimation (The objectness of that thing, what makes that thing that thing)
+   - Recognize if something belongs to a destribution (annomoly detection)
+   - Reconstruct, generate, fabricate mor of it
+  - Represent a high dimentional data using a low-dimentional representation 
+    for comparison 
+  - Dimentional reduction
+
+- Reinforcement learning:
+ - Learn to act
+ - agent
+  - Observe the nevironment
+  - Take action
+  - With each action, receive rewards, punishments
+  - goal: learn a policy that optimizes rewards
+ - No examples of optimal outputs are given
+ - Take 533 (spring) Inteligent agent design etc.
+
+- When do we need the computer to learn
+- What are the apropriate applications:
+ - Situations where humans can perform the task but can't describe how they do it
+  - Object recognition
+  - symentic segmentation
+  - Audio analysis
+  - email and spam detection
+ - Situation where desired function is different for indoviduals
+  - Netflix
+  - amazon website
+  - etc.
+ - Situations where the desired function is changing rapidly
+  - stock market
+ - situations where human experiments do not have sufficient knowledge and need help
+  - drug exxperimentation
+  - protein folding
+
+ - Question: how about situations where we do not have compute power, resources
+  - example: non deterministic approaches to problem solving
+
+- Supervised learning:
+ - (x1,y1),(x2,y2),...,(xn,yn)
+ - xi: The input
+ - yi: corresponding output (could be descrete or continuous)
+ - we assume there is an underlying function f that maps from x to y - our TAGET FUNCTION
+ * Goal is to approximate the function F so we can make a reasonable prediction for
+   an unseen input x
+
+- Key components of ML:
+ - Representation:
+  - How do we represnt function f:
+   - linear, polynomial, tree, NN, set of rules
+  - Question: Does this apply to input and output as well?
+
+ - Object: what is our goal of learning? how do we quantify it?
+  - accuracy, Precision and recall, likelehood, cost
+
+ - optimization: How do we optimize the object
+  - Combinatorial opt, Convex opt, Constrained opt, search based opt, etc
+
+- A toy exampl: regression
+ - Look at the slide
+
+- Poly curve fitting
+ - The re are infinite number of functions we can use, we need constraints:
+  - We only consider polynomial
+   - y(x,w) = w0 + w1x+ w2x^2 + ... + wM x^M
+    - why poly: simple and powerful
+    - Degree needs to be fixed
+    - Question: why not splines? they are simple for computers and powerful too and their behavior could be less noisy
+   - w = (w0,w1,w2,...,wm) 
+   - learn means to find a good set of parameters to minimize loss function:
+ - Sum of squares error estimation: E(w) = 1/2 sum (N,n=1) (y(xn,w)-tn)^2

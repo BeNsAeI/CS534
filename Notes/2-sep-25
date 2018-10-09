@@ -1,0 +1,113 @@
+Over fitting
+- As M increases, SSE on the training data decreases monotonically
+- However, SSE on test data starts to increase after a while
+ - Generally the case - Overfitting: when the learning adjusts to some random 
+   signals in the training data that is not relevent to target function
+- it happens when:
+ - too lottle data
+ - too many parameters
+
+Key issues in Machine learning:
+- what are good hypothesis spaces
+ - which space (linear, polynomial, etc) is best
+- How to select among several hypothesis spaces
+ - The model selection problem
+- How can we optimize accuracy of future data points
+ - Generalization error
+- how confident can we be in the results
+ - How much training data is needed
+- Are some problems computationally intractable
+ - Computation problem
+ - some  problems are hard to compute
+- How can we formulate an application problems as machine learning problems?
+ - engineering problem
+
+
+Road map for the next few weeks:
+
+- Linear regression:
+ - linear models for continuous target variables
+- Linear classification models
+ - Logistic ccregression
+ - Naive bayes
+ - Perceptron
+ - linear support vector machines
+- non linear classification models
+ - Kernel SVM
+ - Decision Trees
+ - Neural  networks
+
+Linear Models for Regression:
+- Key concept:
+ - Sum of squared error for rregression loss
+ - Gradient decent from loss minimization
+ - ...
+
+Examples of regression problems:
+ - Predict housing prices
+  - based on size, lot size, location, # of rooms etc
+ - Predict stock prices
+  - based on price history of past months
+ - Predict the abondance of a species
+  - based on environment conditions, shrubs, trees, other species, etc
+
+a basic set up
+- Given: a training set, conditioning a total of N training examples
+  (xi,yi) for i = 1,...,N
+- goal: learn a function \hat{y} to minimize some loss function on training data
+
+- To begin, we consider a linear hypothesis space
+ - let x = [1,x_1,x_2,...,x_d]
+ - \hat{y} = w_0+w_1x...
+
+Optimization of loss function:
+- Many ways to optimize this objective function
+- A simple approach is gradient decent
+ - start with some random guess
+ - oterativly improve the parameter by following the steepest decent direction
+- gradient: multivariate generalization of derivative, points in the general 
+  direction of greatest rate of
+
+ - start from initial giess w^0
+ - find the direction of steepest decent - optiite of gradient direction \deltaf(w)
+ - take a step towards that direction (step size: \lambda)
+ - w^{t+1} = w^t - \lamda\delta f(w^t))
+ - repeat until no more improvment possible
+  - (|\delta f (w^t)| \leq \epsilon)
+Question: how do we define minimum threshhold epsilon for a give error margin
+
+From derivative to gradient:
+ - f(x) = x^k; dff/dx = kx^{k-1}
+ - f(x) = e^x + 2x^2 df/dx = e^x + 4x
+
+Generalization multivariant:
+f(x) where x= [x_1,...,x_d]^T
+
+Gradient \delta f(x) = [df/dx_1, ..., df/dx_d]^T
+
+___
+
+W^T = [w0,w1,w2,...,wi]
+Gradient decent SSE: \delta E(w) = (w^t x_i - yi)x_i = \Sum (\hat{y}(i) -y_i)x_i
+
+Batch gradient decent:
+- until |\delta E(w)| \leq epsilon:
+ - \delta E = \sum (w^tx_i - y_i)x_i
+ - weight adjustment: w <- w - \lambda delta E(w)
+
+* be careful about learning rate or step size \lambda, avoid overstepping
+___
+
+Stochastic gradient descent:
+ - w = w0
+ - repeat until converges{
+  - for i = 1 to N w <- w - \lambda(w^Tx_i - y_i)x_i
+  }
+* larger the dataset, the faster it converges
+
+* alternativly we can just set the gradient to 0 to find the extreme point of E(w)
+- X^Txw - X^tY = 0
+- X^Txw = X^tY
+- w = (X^TX)^{-1}X^TY
+___
+

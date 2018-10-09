@@ -1,0 +1,91 @@
+Learin for Logistic Regression
+
+- We assume examples are identically independantly distributed
+- P(y = 1|x;w) = 1 / (1 + exp(-w^Tx))
+
+- Data Log likelyhood:
+ - log \pi_i P(x^i,y^i;w)
+ - \sum_i log P(x^i,y^i;w)
+ - \sum_i log P(y^i | x^i;w) P(x^i;w)
+ - \sum_i log P(y^i|x^i;w) + C)
+ * P is the sigmoid function*****
+  * P(x,y;w) = 1/(1+exp(-w^Tx))
+ * ;w w is a parameter
+
+ - Sigmoid equation: 1/(1+e^{-w^Tx})
+ - \sum [y^iw^Tx^i - log(1/(1+exp(w^Tx^i)))]
+ - Look at the slides on page 10
+- Gradient:
+ - L(w) = \sum [y^i - P(y=1|x^i;w)]x^i
+
+
+Batch gradient:
+ let w <- w_0 // (0,0,0,0,...,0)
+ repeat until convergence:
+  - d <- (0,0,0,...,0)
+  - for i = 1 to n do:
+   - \hat{y}^i <- 1/(1+exp(-w^Tx^i))
+   - error = y^i - \hat{y}^i
+   - d = d + error .x^i
+  - w <- w+\n
+
+
+Stochastic gradient:
+ let w <- w_0 // (0,0,0,0,...,0)
+ repeat until convergence:
+  randomly shiffle examples
+  for i = 1 to N do:
+   - \hat{y}^i <- 1/(1+exp(-w^Tx^i))
+   - w <- w + \n(y^i-\hat{y}^i)x^i
+
+- Use grid search in log0space over small values
+- sometimes employ a schedule to gradually reduce the learning rate
+ - 1/(1+kt)
+ - 1/t^2
+ - If loss increases too fast -> reduce
+ - if loss is to slow -> increase
+- More advanced techniques
+
+in general, when data is linearly seperable, LR overfits
+
+___
+
+Soft-Max LR
+- P(Y = K|x) = \hat{y}_k = exp(w^_k x)/ (\sum exp(W^T_j x))
+- \delta_{w_k} L = \sum (Error)x^i, error = y^i_k - \hat{y}^i_k
+
+Bayesian vs. Frequentist
+- two different views for estimation
+- Frequentis: a parameter is a deterministic unknown value
+- Bayesian: a parameter is random variable with a distribution
+ - prior: randomness is how we assume it is going to behave
+ - posterior: use the data to adjust the asumption (information) made in prior
+
+- P(\theta:parameter | D:data) = p(\theta)p(D|\theta)/P(D)
+- = p(\theta)p(D|\theta)\ integral(p(D|\theta)p(theta)d\theta)
+- Posterior: p(\theta|D)
+- Prior: p(\theta)
+
+Maximum A Posterior estimation (MAP)
+- estimation as penalty method
+
+- \hat{\theta}_{MAP} = argmaxp(\theta|D)
+- = argmax(p(D|\theta)p(\theta)\p(D))
+= argmax(p(D|\theta)p(\theta))
+
+Prior for weight:
+- w ~ N(0, \sigma^2I)
+
+* argmax l(w) + \sum(-w^2_j/2\sigma^2)
+
+- \lambda = 1/\sigma^2
+- argmax l(w) - \lambda/2 * \sum(w^2_j) which is l2 regularization
+
+Another way to set prior:
+- w_i ~ laplace(0,b)
+
+Summary of LR:
+- A popular discriminative classifier
+- Learns conditional probability distribution P(y|x)
+- Maximum likelihood estimation
+- Maximum A posterior estimation
