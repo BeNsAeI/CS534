@@ -19,6 +19,13 @@ class Helper:
 		self.dev_set=self.dev_set.drop('dummy',1)
 		self.dev_set=self.dev_set.drop('id',1)
 
+		self.x_train = None
+		self.y_train = None
+		self.x_test = None
+		self.y_test = None
+		self.x_dev = None
+		self.y_dev = None
+
 	def gen_training_data(self,file,normalization):
 		day=list()
 		month=list()
@@ -35,17 +42,17 @@ class Helper:
 		self.training_set.insert(loc=0, column='day', value=day)
 		self.training_set=self.training_set.drop('date',1)
 		self.training_set.head()
-		x_train = self.training_set.drop('price', 1)
-		y_train = self.training_set['price']
+		self.x_train = self.training_set.drop('price', 1)
+		self.y_train = self.training_set['price']
 		#Normlization
 		if normalization==True:
-			x_train = (x_train - x_train.mean()) / (x_train.max() - x_train.min())
+			self.x_train = (self.x_train - self.x_train.mean()) / (self.x_train.max() - self.x_train.min())
 		else:
 			action='Do nothing'
 		# add the bias column
-		ones = np.ones(x_train.shape[0])
-		x_train.insert(loc=0, column='Intercept', value=ones)
-		return x_train,y_train
+		ones = np.ones(self.x_train.shape[0])
+		self.x_train.insert(loc=0, column='Intercept', value=ones)
+		return self.x_train,self.y_train
 
 	def gen_dev_data(self,file,normalization):
 		day=list()
