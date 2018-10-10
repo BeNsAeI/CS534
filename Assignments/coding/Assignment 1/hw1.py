@@ -4,6 +4,7 @@
 # In[2]:
 
 import sys
+from time import sleep
 
 plot_mode = False
 n_epoch_scale = 1
@@ -23,7 +24,6 @@ import pandas as pd
 if plot_mode:
 	import matplotlib.pyplot as plt
 import os
-from time import sleep
 # In[3]:
 
 np.random.seed(0)
