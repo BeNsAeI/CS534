@@ -19,140 +19,144 @@ import os
 
 #get_ipython().magic(u'matplotlib inline')
 np.random.seed(0)
+plot_mode = False
+if(len(sys.argv) > 1):
+	print("executing: "+sys.argv[1]+" -> "+str(len(sys.argv[1]))+" Plot mode enabled")
+	plot_mode = True
 
 def gen_data(file,normalization):
-    train_data=pd.read_csv(file)
-    train_data=train_data.drop('dummy',1)
-    train_data=train_data.drop('id',1)
-    day=list()
-    month=list()
-    year=list()
-    for item in train_data['date']:
-        day.append(item.split('/')[1])
-        month.append(item.split('/')[0])
-        year.append(item.split('/')[2])
-    day=np.asarray(day).astype(int)
-    month=np.asarray(month).astype(int)
-    year=np.asarray(year).astype(int)
-    train_data.insert(loc=0, column='year', value=year)
-    train_data.insert(loc=0, column='month', value=month)
-    train_data.insert(loc=0, column='day', value=day)
-    train_data=train_data.drop('date',1)
-    train_data.head()
-    x_train = train_data.drop('price', 1)
-    y_train = train_data['price']
-    #Normlization
-    if normalization==True:
-        x_train = (x_train - x_train.mean()) / (x_train.max() - x_train.min())
-    else:
-        action='Do nothing'
-    # add the bias column
-    ones = np.ones(x_train.shape[0])
-    x_train.insert(loc=0, column='Intercept', value=ones)
-    return x_train,y_train
+	train_data=pd.read_csv(file)
+	train_data=train_data.drop('dummy',1)
+	train_data=train_data.drop('id',1)
+	day=list()
+	month=list()
+	year=list()
+	for item in train_data['date']:
+		day.append(item.split('/')[1])
+		month.append(item.split('/')[0])
+		year.append(item.split('/')[2])
+	day=np.asarray(day).astype(int)
+	month=np.asarray(month).astype(int)
+	year=np.asarray(year).astype(int)
+	train_data.insert(loc=0, column='year', value=year)
+	train_data.insert(loc=0, column='month', value=month)
+	train_data.insert(loc=0, column='day', value=day)
+	train_data=train_data.drop('date',1)
+	train_data.head()
+	x_train = train_data.drop('price', 1)
+	y_train = train_data['price']
+	#Normlization
+	if normalization==True:
+		x_train = (x_train - x_train.mean()) / (x_train.max() - x_train.min())
+	else:
+		action='Do nothing'
+	# add the bias column
+	ones = np.ones(x_train.shape[0])
+	x_train.insert(loc=0, column='Intercept', value=ones)
+	return x_train,y_train
 
 def gen_test_data(file,normalization):
-    train_data=pd.read_csv(file)
-    train_data=train_data.drop('dummy',1)
-    train_data=train_data.drop('id',1)
-    day=list()
-    month=list()
-    year=list()
-    for item in train_data['date']:
-        day.append(item.split('/')[1])
-        month.append(item.split('/')[0])
-        year.append(item.split('/')[2])
-    day=np.asarray(day).astype(int)
-    month=np.asarray(month).astype(int)
-    year=np.asarray(year).astype(int)
-    train_data.insert(loc=0, column='year', value=year)
-    train_data.insert(loc=0, column='month', value=month)
-    train_data.insert(loc=0, column='day', value=day)
-    train_data=train_data.drop('date',1)
-    train_data.head()
-    x_train = train_data
-    #Normlization
-    if normalization==True:
-        x_train = (x_train - x_train.mean()) / (x_train.max() - x_train.min())
-    else:
-        action='Do nothing'
-    # add the bias column
-    ones = np.ones(x_train.shape[0])
-    x_train.insert(loc=0, column='Intercept', value=ones)
-    return x_train
+	train_data=pd.read_csv(file)
+	train_data=train_data.drop('dummy',1)
+	train_data=train_data.drop('id',1)
+	day=list()
+	month=list()
+	year=list()
+	for item in train_data['date']:
+		day.append(item.split('/')[1])
+		month.append(item.split('/')[0])
+		year.append(item.split('/')[2])
+	day=np.asarray(day).astype(int)
+	month=np.asarray(month).astype(int)
+	year=np.asarray(year).astype(int)
+	train_data.insert(loc=0, column='year', value=year)
+	train_data.insert(loc=0, column='month', value=month)
+	train_data.insert(loc=0, column='day', value=day)
+	train_data=train_data.drop('date',1)
+	train_data.head()
+	x_train = train_data
+	#Normlization
+	if normalization==True:
+		x_train = (x_train - x_train.mean()) / (x_train.max() - x_train.min())
+	else:
+		action='Do nothing'
+	# add the bias column
+	ones = np.ones(x_train.shape[0])
+	x_train.insert(loc=0, column='Intercept', value=ones)
+	return x_train
 
 def solve_lr(x_train,y_train,alpha,n_epoch):
-    # Option 1 --> set w as random values between 0 and 1
-    w=np.random.rand(x_train.shape[1])
-    # Option 2 --> set w as zero
-    #w=np.zeros(x_train.shape[1])
+	# Option 1 --> set w as random values between 0 and 1
+	w=np.random.rand(x_train.shape[1])
+	# Option 2 --> set w as zero
+	#w=np.zeros(x_train.shape[1])
 
-    w=np.matrix(w).T
-    X=np.matrix(x_train)
-    y=np.matrix(y_train)
-    grad_norm=10000
-    counters = list()
-    sse_s = list()
-    counter=0
-    while grad_norm > 0.01:
-        e=X*w-y.T
-        grad=X.T*e/X.shape[0]
-        # case 1 separate w0 and other w terms
-        #w[0] = w[0] - alpha * e[0]
-        #w[1:] = w[1:] - alpha * grad[1:]
-        # case to follow the same implementation for all w terms
-        w = w - alpha * grad
-        e=X*w-y.T
-        sse=np.dot(e.T,e)[0,0]/X.shape[0]
-        grad_norm=np.square(grad.T*grad)[0,0]
-        #print(0.5*sse)
-        counter+=1
-        counters.append(counter)
-        sse_s.append(0.5*sse)
-        if counter >= n_epoch:
-            print('maximum iteration limit reached!')
-            break
-    return w,counters,sse_s
+	w=np.matrix(w).T
+	X=np.matrix(x_train)
+	y=np.matrix(y_train)
+	grad_norm=10000
+	counters = list()
+	sse_s = list()
+	counter=0
+	while grad_norm > 0.01:
+		e=X*w-y.T
+		grad=X.T*e/X.shape[0]
+		# case 1 separate w0 and other w terms
+		#w[0] = w[0] - alpha * e[0]
+		#w[1:] = w[1:] - alpha * grad[1:]
+		# case to follow the same implementation for all w terms
+		w = w - alpha * grad
+		e=X*w-y.T
+		sse=np.dot(e.T,e)[0,0]/X.shape[0]
+		grad_norm=np.square(grad.T*grad)[0,0]
+		#print(0.5*sse)
+		counter+=1
+		counters.append(counter)
+		sse_s.append(0.5*sse)
+		if counter >= n_epoch:
+			print('maximum iteration limit reached!')
+			break
+	return w,counters,sse_s
 def solve_lrn(x_train,y_train,alpha,landa,n_epoch):
-    # Option 1 --> set w as random values between 0 and 1
-    w=np.random.rand(x_train.shape[1])
-    # Option 2 --> set w as zero
-    #w=np.zeros(x_train.shape[1])
+	# Option 1 --> set w as random values between 0 and 1
+	w=np.random.rand(x_train.shape[1])
+	# Option 2 --> set w as zero
+	#w=np.zeros(x_train.shape[1])
 
-    w=np.matrix(w).T
-    X=np.matrix(x_train)
-    y=np.matrix(y_train)
-    grad_norm=1000
-    counters = list()
-    sse_s = list()
-    counter=0
-    while grad_norm>0.01:
-        e=X*w-y.T
-        grad=X.T*e/X.shape[0]
-        # case 1 separate w0 and other w terms
-        w[0] = w[0] - alpha * grad[0]
-        w[1:] = w[1:] - alpha * grad[1:]+landa/X.shape[0]*w[1:]
-        e=X*w-y.T
-        sse=np.dot(e.T,e)[0,0]/X.shape[0]
-        grad_norm=np.square(grad.T*grad)[0,0]
-        #print(0.5*sse)
-        counter+=1
-        counters.append(counter)
-        sse_s.append(0.5*sse)
-        if counter  >= n_epoch:
-            print('maximum iteration limit reached!')
-            break
-    return w,counters,sse_s
+	w=np.matrix(w).T
+	X=np.matrix(x_train)
+	y=np.matrix(y_train)
+	grad_norm=1000
+	counters = list()
+	sse_s = list()
+	counter=0
+	while grad_norm>0.01:
+		e=X*w-y.T
+		grad=X.T*e/X.shape[0]
+		# case 1 separate w0 and other w terms
+		w[0] = w[0] - alpha * grad[0]
+		w[1:] = w[1:] - alpha * grad[1:]+landa/X.shape[0]*w[1:]
+		e=X*w-y.T
+		sse=np.dot(e.T,e)[0,0]/X.shape[0]
+		grad_norm=np.square(grad.T*grad)[0,0]
+		#print(0.5*sse)
+		counter+=1
+		counters.append(counter)
+		sse_s.append(0.5*sse)
+		if counter  >= n_epoch:
+			print('maximum iteration limit reached!')
+			break
+	return w,counters,sse_s
 def test(w,x_train,y_train):
-    X=np.matrix(x_train)
-    y=np.matrix(y_train)
-    e=X*w-y.T
-    sse=np.dot(e.T,e)[0,0]/X.shape[0]
-    return sse
+	X=np.matrix(x_train)
+	y=np.matrix(y_train)
+	e=X*w-y.T
+	sse=np.dot(e.T,e)[0,0]/X.shape[0]
+	return sse
 def predict(w,x_test):
-    X=np.matrix(x_test)
-    y=X*w
-    return y
+	X=np.matrix(x_test)
+	y=X*w
+	return y
 
 
 # In[4]:
@@ -172,9 +176,9 @@ day=list()
 month=list()
 year=list()
 for item in train_data['date']:
-    day.append(item.split('/')[1])
-    month.append(item.split('/')[0])
-    year.append(item.split('/')[2])
+	day.append(item.split('/')[1])
+	month.append(item.split('/')[0])
+	year.append(item.split('/')[2])
 day=np.asarray(day).astype(int)
 month=np.asarray(month).astype(int)
 year=np.asarray(year).astype(int)
@@ -192,7 +196,7 @@ train_data.head()
 print("Category proportions for categorical columns \n")
 categs=['waterfront','view','condition','grade']
 for item in categs:
-    print(train_data.groupby(item).agg({'price':'count'})/train_data.shape[0]*100)
+	print(train_data.groupby(item).agg({'price':'count'})/train_data.shape[0]*100)
 print("\nStandard deviation for numerical columns \n")
 print(train_data.std().drop(categs,0))
 print("\nMean for numerical columns \n")
@@ -206,14 +210,15 @@ print(range_col.astype(float).drop(categs,0))
 
 
 # ========== Part 0.(d) ================
-plt.figure(0)
-plt.plot(train_data['sqft_living15'],train_data['price'],'ro')
-plt.xlabel('square footage')
-plt.ylabel('price')
-plt.figure(1)
-plt.plot(train_data['bedrooms'],train_data['price'],'ro')
-plt.xlabel('bedrooms')
-plt.ylabel('price')
+if plot_mode:
+	plt.figure(0)
+	plt.plot(train_data['sqft_living15'],train_data['price'],'ro')
+	plt.xlabel('square footage')
+	plt.ylabel('price')
+	plt.figure(1)
+	plt.plot(train_data['bedrooms'],train_data['price'],'ro')
+	plt.xlabel('bedrooms')
+	plt.ylabel('price')
 
 
 # In[8]:
@@ -237,15 +242,15 @@ print('Part 1 -------------------')
 #alphas=[3,2,1.99,1.5,1.2,1.1,1,0.1,1e-2,1e-3,1e-4,1e-5,1e-6,1e-7]
 alphas=[1.99,1.5,1.2,1.1,1,0.1,1e-2,1e-3,1e-4,1e-5,1e-6,1e-7]
 
-
-plt.figure(3)
-for a in alphas:
-    results = solve_lr(x_train, y_train, alpha=a,n_epoch=10000)
-    plt.xlabel('Iterations')
-    plt.ylabel('SSE')
-    plt.plot(results[1],results[2])
-plt.legend(['alpha= {}'.format(x) for x in alphas], loc='upper right')
-plt.show()
+if plot_mode:
+	plt.figure(3)
+	for a in alphas:
+		results = solve_lr(x_train, y_train, alpha=a,n_epoch=10000)
+		plt.xlabel('Iterations')
+		plt.ylabel('SSE')
+		plt.plot(results[1],results[2])
+	plt.legend(['alpha= {}'.format(x) for x in alphas], loc='upper right')
+	plt.show()
 
 
 # In[10]:
@@ -258,27 +263,27 @@ y_cross=data[1]
 training_sse=list()
 dev_sse=list()
 for a in alphas:
-    results = solve_lr(x_train, y_train, alpha=a,n_epoch=10000)
-    w=results[0]
-    sse=test(w,x_cross,y_cross)
-    dev_sse.append(sse)
-    training_sse.append(results[2][-1])
+	results = solve_lr(x_train, y_train, alpha=a,n_epoch=10000)
+	w=results[0]
+	sse=test(w,x_cross,y_cross)
+	dev_sse.append(sse)
+	training_sse.append(results[2][-1])
 print('training sse for all the alpha values are:\n {}:\n'.format(training_sse))
 print('dev sse for all the alpha values are:\n {}:\n'.format(dev_sse))
-plt.figure(5)
-plt.xlabel('alpha')
-plt.ylabel('SSE')
-plt.plot(alphas,dev_sse)
-plt.plot(alphas,training_sse)
-plt.legend(['Validation SSE','Training SSE'], loc='upper right')
-plt.show()
-
+if plot_mode:
+	plt.figure(5)
+	plt.xlabel('alpha')
+	plt.ylabel('SSE')
+	plt.plot(alphas,dev_sse)
+	plt.plot(alphas,training_sse)
+	plt.legend(['Validation SSE','Training SSE'], loc='upper right')
+	plt.show()
 
 # In[ ]:
 
 
 # ============= Part 1.c =======================s
-results = solve_lr(x_train, y_train, alpha=1.99,n_epoch=10000)    # compare the weights with alpha=1, there is no negative weight when alpha =1 which makes more sense in terms of interpretation.
+results = solve_lr(x_train, y_train, alpha=1.99,n_epoch=10000)	# compare the weights with alpha=1, there is no negative weight when alpha =1 which makes more sense in terms of interpretation.
 w=results[0]
 weight_df=pd.DataFrame([train_data._info_axis[:-1],w[1:]],index=['Feature','Weight'])   # w[1:] because the first item in w is the bias term ---  train-data._info_axis[:-1] because the last column there is the price.
 print(results[2][-1])
@@ -292,33 +297,37 @@ print(weight_df)
 # ============= Part 2.a =======================s
 
 landas=[0,1e-3,1e-2,1e-1,1,10,100]
-plt.figure(5)
+if plot_mode:
+	plt.figure(5)
 for l in landas:
-    results = solve_lrn(x_train, y_train, alpha=1,landa=l,n_epoch=10000)
-    plt.xlabel('Iterations')
-    plt.ylabel('SSE')
-    plt.plot(results[1],results[2])
-plt.legend(['Landa= {}'.format(x) for x in landas], loc='upper right')
-plt.show()
+	results = solve_lrn(x_train, y_train, alpha=1,landa=l,n_epoch=10000)
+	if plot_mode:
+		plt.xlabel('Iterations')
+		plt.ylabel('SSE')
+		plt.plot(results[1],results[2])
+if plot_mode:
+	plt.legend(['Landa= {}'.format(x) for x in landas], loc='upper right')
+	plt.show()
 
 
 training_sse=list()
 dev_sse=list()
 for l in landas:
-    results = solve_lrn(x_train, y_train, alpha=1,landa=l,n_epoch=10000)
-    w=results[0]
-    sse=test(w,x_cross,y_cross)
-    dev_sse.append(sse)
-    training_sse.append(results[2][-1])
+	results = solve_lrn(x_train, y_train, alpha=1,landa=l,n_epoch=10000)
+	w=results[0]
+	sse=test(w,x_cross,y_cross)
+	dev_sse.append(sse)
+	training_sse.append(results[2][-1])
 print('training sse for all the landa values are:\n {}:\n'.format(training_sse))
 print('dev sse for all the landa values are:\n {}:\n'.format(dev_sse))
-plt.figure(6)
-plt.xlabel('landa')
-plt.ylabel('SSE')
-plt.plot(landas,dev_sse)
-plt.plot(landas,training_sse)
-plt.legend(['Validation SSE','Training SSE'], loc='upper right')
-plt.show()
+if plot_mode:
+	plt.figure(6)
+	plt.xlabel('landa')
+	plt.ylabel('SSE')
+	plt.plot(landas,dev_sse)
+	plt.plot(landas,training_sse)
+	plt.legend(['Validation SSE','Training SSE'], loc='upper right')
+	plt.show()
 
 
 # In[ ]:
@@ -355,20 +364,21 @@ alphas=[1,1e-3,1e-6,1e-9,1e-15,0]
 training_sse=list()
 dev_sse=list()
 for a in alphas:
-    results = solve_lr(x_train, y_train, alpha=a,n_epoch=10000)
-    w=results[0]
-    sse=test(w,x_cross,y_cross)
-    dev_sse.append(sse)
-    training_sse.append(results[2][-1])
+	results = solve_lr(x_train, y_train, alpha=a,n_epoch=10000)
+	w=results[0]
+	sse=test(w,x_cross,y_cross)
+	dev_sse.append(sse)
+	training_sse.append(results[2][-1])
 print('training sse for all the alpha values are:\n {}:\n'.format(training_sse))
 print('dev sse for all the alpha values are:\n {}:\n'.format(dev_sse))
-plt.figure(5)
-plt.xlabel('alpha')
-plt.ylabel('SSE')
-plt.plot(alphas,dev_sse)
-plt.plot(alphas,training_sse)
-plt.legend(['Validation SSE','Training SSE'], loc='upper right')
-plt.show()
+if plot_mode:
+	plt.figure(5)
+	plt.xlabel('alpha')
+	plt.ylabel('SSE')
+	plt.plot(alphas,dev_sse)
+	plt.plot(alphas,training_sse)
+	plt.legend(['Validation SSE','Training SSE'], loc='upper right')
+	plt.show()
 
 
 # In[144]:
