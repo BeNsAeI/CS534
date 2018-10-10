@@ -20,7 +20,8 @@ if(len(sys.argv) > 1):
 import numpy as np
 import pandas as pd
 import sys
-import matplotlib.pyplot as plt
+if plot_mode:
+	import matplotlib.pyplot as plt
 import os
 from time import sleep
 # In[3]:
