@@ -10,19 +10,22 @@ import pandas as pd
 import sys
 import matplotlib.pyplot as plt
 import os
-#os.chdir(path)
-#os.getcwd()
-
-
+from time import sleep
 # In[3]:
 
 
 #get_ipython().magic(u'matplotlib inline')
 np.random.seed(0)
 plot_mode = False
+n_epoch_scale = 1
 if(len(sys.argv) > 1):
-	print("executing: "+sys.argv[1]+" -> "+str(len(sys.argv[1]))+" Plot mode enabled")
-	plot_mode = True
+	if sys.argv[1][0] == 'p':
+		print("executing: "+sys.argv[1]+" -> "+str(len(sys.argv[1]))+" Plot mode enabled")
+		plot_mode = True
+	if sys.argv[1][0] == 'h':
+		print("executing: "+sys.argv[1]+" -> "+str(len(sys.argv[1]))+" High performance mode enabled")
+		n_epoch_scale = 10
+	sleep(10)
 
 def gen_data(file,normalization):
 	train_data=pd.read_csv(file)
@@ -113,7 +116,7 @@ def solve_lr(x_train,y_train,alpha,n_epoch):
 		counter+=1
 		counters.append(counter)
 		sse_s.append(0.5*sse)
-		if counter >= n_epoch:
+		if counter >= (n_epoch*n_epoch_scale):
 			print('maximum iteration limit reached!')
 			break
 	return w,counters,sse_s
@@ -143,7 +146,7 @@ def solve_lrn(x_train,y_train,alpha,landa,n_epoch):
 		counter+=1
 		counters.append(counter)
 		sse_s.append(0.5*sse)
-		if counter  >= n_epoch:
+		if counter  >= (n_epoch*n_epoch_scale):
 			print('maximum iteration limit reached!')
 			break
 	return w,counters,sse_s
