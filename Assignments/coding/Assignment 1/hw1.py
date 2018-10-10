@@ -3,6 +3,18 @@
 
 # In[2]:
 
+np.random.seed(0)
+plot_mode = False
+n_epoch_scale = 1
+if(len(sys.argv) > 1):
+	if sys.argv[1][0] == 'p':
+		print("executing: "+sys.argv[1]+" -> "+str(len(sys.argv[1]))+" Plot mode enabled")
+		plot_mode = True
+	if sys.argv[1][0] == 'h':
+		print("executing: "+sys.argv[1]+" -> "+str(len(sys.argv[1]))+" High performance mode enabled")
+		n_epoch_scale = 10
+	sleep(5)
+
 
 # Import neccasary libraries
 import numpy as np
@@ -15,17 +27,6 @@ from time import sleep
 
 
 #get_ipython().magic(u'matplotlib inline')
-np.random.seed(0)
-plot_mode = False
-n_epoch_scale = 1
-if(len(sys.argv) > 1):
-	if sys.argv[1][0] == 'p':
-		print("executing: "+sys.argv[1]+" -> "+str(len(sys.argv[1]))+" Plot mode enabled")
-		plot_mode = True
-	if sys.argv[1][0] == 'h':
-		print("executing: "+sys.argv[1]+" -> "+str(len(sys.argv[1]))+" High performance mode enabled")
-		n_epoch_scale = 10
-	sleep(10)
 
 def gen_data(file,normalization):
 	train_data=pd.read_csv(file)
