@@ -3,7 +3,7 @@
 
 # In[2]:
 
-np.random.seed(0)
+
 plot_mode = False
 n_epoch_scale = 1
 if(len(sys.argv) > 1):
@@ -26,7 +26,7 @@ import os
 from time import sleep
 # In[3]:
 
-
+np.random.seed(0)
 #get_ipython().magic(u'matplotlib inline')
 
 def gen_data(file,normalization):
