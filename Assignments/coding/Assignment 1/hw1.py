@@ -3,6 +3,7 @@
 
 # In[2]:
 
+import sys
 
 plot_mode = False
 n_epoch_scale = 1
@@ -19,7 +20,6 @@ if(len(sys.argv) > 1):
 # Import neccasary libraries
 import numpy as np
 import pandas as pd
-import sys
 if plot_mode:
 	import matplotlib.pyplot as plt
 import os
