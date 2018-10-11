@@ -12,22 +12,20 @@ if(len(sys.argv) > 1):
 	if sys.argv[1][0] == 'p':
 		print("executing: "+sys.argv[1]+" -> "+str(len(sys.argv[1]))+" Plot mode enabled")
 		plot_mode = True
-	if sys.argv[1][0] == 'h':
-		print("executing: "+sys.argv[1]+" -> "+str(len(sys.argv[1]))+" High performance mode enabled")
+	if sys.argv[1][0] == 'h' or sys.argv[2][0] == 'h':
+		print("executing: h -> "+str(len(sys.argv[1]))+" High performance mode enabled")
 		n_epoch_scale = 10
 	sleep(5)
-
 
 # Import neccasary libraries
 import numpy as np
 import pandas as pd
+import os
 if plot_mode:
 	import matplotlib.pyplot as plt
-import os
-# In[3]:
 
-np.random.seed(0)
 #get_ipython().magic(u'matplotlib inline')
+np.random.seed(0)
 
 def gen_data(file,normalization):
 	train_data=pd.read_csv(file)
@@ -103,15 +101,15 @@ def solve_lr(x_train,y_train,alpha,n_epoch):
 	counters = list()
 	sse_s = list()
 	counter=0
-	while grad_norm > 0.01:
+	while grad_norm>0.1:
 		e=X*w-y.T
-		grad=X.T*e/X.shape[0]
+		grad=np.multiply(e,X)
+		grad=np.sum(grad,axis=0)/X.shape[0]
 		# case 1 separate w0 and other w terms
 		#w[0] = w[0] - alpha * e[0]
 		#w[1:] = w[1:] - alpha * grad[1:]
 		# case to follow the same implementation for all w terms
 		w = w - alpha * grad
-		e=X*w-y.T
 		sse=np.dot(e.T,e)[0,0]/X.shape[0]
 		grad_norm=np.square(grad.T*grad)[0,0]
 		#print(0.5*sse)
@@ -137,21 +135,39 @@ def solve_lrn(x_train,y_train,alpha,landa,n_epoch):
 	counter=0
 	while grad_norm>0.01:
 		e=X*w-y.T
-		grad=X.T*e/X.shape[0]
+		grad=np.multiply(e,X)
+		grad=np.sum(grad,axis=0)/X.shape[0]
+		w = np.squeeze(np.asarray(w))
+		grad = np.squeeze(np.asarray(grad))
+		#print(grad)
 		# case 1 separate w0 and other w terms
+		#print('shape of w is {}'.format(w.shape))
+		#print('w[0]: {}'.format(w[0]))
+		#print('w[1:]: {}'.format(w[1:]))
+		#print('grad[0]: {}'.format(grad[0]))
+		#print('grad[1:: {}'.format(grad[1:]))
+		#print('operation w[0] - alpha * grad[0,0] is \n{}'.format(w[0] - alpha * grad[0]))
+		#print('w[0,1:] = w[0,1:] - alpha * grad[0,1:]+landa/X.shape[0]*w[0,1:] is \n {}'.format(w[1:] - alpha * grad[1:]+landa/X.shape[0]*w[1:]))
 		w[0] = w[0] - alpha * grad[0]
-		w[1:] = w[1:] - alpha * grad[1:]+landa/X.shape[0]*w[1:]
+		w[1:] = w[1:] - alpha * grad[1:]-landa/X.shape[0]*w[1:]
+		w=np.asmatrix(w).T
+		grad=np.asmatrix(grad)
 		e=X*w-y.T
+		# print(sum([x**2 for x in e])) cross-check for sse calculation
 		sse=np.dot(e.T,e)[0,0]/X.shape[0]
-		grad_norm=np.square(grad.T*grad)[0,0]
+		#print(sum([x**2 for x in grad.T])) #cross-check for grad_norm calculation
+		grad_norm=np.sum(np.multiply(grad,grad))
+		grad_norm=np.sqrt(grad_norm)
+		#print(grad_norm)
 		#print(0.5*sse)
 		counter+=1
 		counters.append(counter)
 		sse_s.append(0.5*sse)
-		if counter  >= (n_epoch*n_epoch_scale):
+		if counter >= (n_epoch*n_epoch_scale):
 			print('maximum iteration limit reached!')
 			break
 	return w,counters,sse_s
+
 def test(w,x_train,y_train):
 	X=np.matrix(x_train)
 	y=np.matrix(y_train)
@@ -164,16 +180,16 @@ def predict(w,x_test):
 	return y
 
 
-# In[4]:
+# In[3]:
 
 
 # ========== Part 0.(a) ================
-train_data=pd.read_csv("resources/PA1_train.csv")
+train_data=pd.read_csv("PA1_train.csv")
 train_data=train_data.drop('dummy',1)
 train_data=train_data.drop('id',1)
 
 
-# In[5]:
+# In[4]:
 
 
 # ========== Part 0.(b) ================
@@ -194,7 +210,7 @@ train_data=train_data.drop('date',1)
 train_data.head()
 
 
-# In[6]:
+# In[5]:
 
 
 # ========== Part 0.(c) ================
@@ -211,7 +227,7 @@ print("\nRange for numerical columns \n")
 print(range_col.astype(float).drop(categs,0))
 
 
-# In[7]:
+# In[6]:
 
 
 # ========== Part 0.(d) ================
@@ -226,7 +242,7 @@ if plot_mode:
 	plt.ylabel('price')
 
 
-# In[8]:
+# In[7]:
 
 
 # ========== Part 0.(e) ================
@@ -244,16 +260,23 @@ w=np.random.rand(x_train.shape[1])
 
 print('Part 1 -------------------')
 # ============= Part 1.a =======================s
+data=gen_data("PA1_dev.csv",normalization=True)
+x_cross=data[0]
+y_cross=data[1]
 #alphas=[3,2,1.99,1.5,1.2,1.1,1,0.1,1e-2,1e-3,1e-4,1e-5,1e-6,1e-7]
-alphas=[1.99,1.5,1.2,1.1,1,0.1,1e-2,1e-3,1e-4,1e-5,1e-6,1e-7]
+alphas=[1,0.1,1e-2,1e-3,1e-4,1e-5,1e-6,1e-7]
 
 if plot_mode:
 	plt.figure(3)
-	for a in alphas:
-		results = solve_lr(x_train, y_train, alpha=a,n_epoch=10000)
+
+dev_sse=list()
+for a in alphas:
+	results = solve_lr(x_train, y_train, alpha=a,n_epoch=1000)
+	if plot_mode:
 		plt.xlabel('Iterations')
 		plt.ylabel('SSE')
 		plt.plot(results[1],results[2])
+if plot_mode:
 	plt.legend(['alpha= {}'.format(x) for x in alphas], loc='upper right')
 	plt.show()
 
@@ -262,13 +285,10 @@ if plot_mode:
 
 
 # ============= Part 1.b =======================s
-data=gen_data("resources/PA1_dev.csv",normalization=True)
-x_cross=data[0]
-y_cross=data[1]
 training_sse=list()
 dev_sse=list()
 for a in alphas:
-	results = solve_lr(x_train, y_train, alpha=a,n_epoch=10000)
+	results = solve_lr(x_train, y_train, alpha=a,n_epoch=1000)
 	w=results[0]
 	sse=test(w,x_cross,y_cross)
 	dev_sse.append(sse)
@@ -284,61 +304,66 @@ if plot_mode:
 	plt.legend(['Validation SSE','Training SSE'], loc='upper right')
 	plt.show()
 
-# In[ ]:
+
+# In[11]:
 
 
 # ============= Part 1.c =======================s
-results = solve_lr(x_train, y_train, alpha=1.99,n_epoch=10000)	# compare the weights with alpha=1, there is no negative weight when alpha =1 which makes more sense in terms of interpretation.
+features=list(train_data._info_axis[:-1])
+results = solve_lr(x_train, y_train, alpha=0.001,n_epoch=1000)	
 w=results[0]
-weight_df=pd.DataFrame([train_data._info_axis[:-1],w[1:]],index=['Feature','Weight'])   # w[1:] because the first item in w is the bias term ---  train-data._info_axis[:-1] because the last column there is the price.
-print(results[2][-1])
-print(weight_df)
+features.insert(0,'Intercept')
+for i in range(len(w)):
+	print('weight of {} is {}'.format(features[i],w[0,i]))
 
 
 
-# In[ ]:
+# In[12]:
 
 
 # ============= Part 2.a =======================s
+from math import log
 
-landas=[0,1e-3,1e-2,1e-1,1,10,100]
+landas=[1e-5,1e-3,1e-2,1e-1,1,10] # IF you add 100 to the batch SSE will explode. Use it in report
 if plot_mode:
 	plt.figure(5)
 for l in landas:
-	results = solve_lrn(x_train, y_train, alpha=1,landa=l,n_epoch=10000)
+	results = solve_lrn(x_train, y_train, alpha=0.001,landa=l,n_epoch=1000)
 	if plot_mode:
 		plt.xlabel('Iterations')
 		plt.ylabel('SSE')
 		plt.plot(results[1],results[2])
 if plot_mode:
-	plt.legend(['Landa= {}'.format(x) for x in landas], loc='upper right')
+	plt.legend(['Lambda= {}'.format(x) for x in landas], loc='upper right')
 	plt.show()
 
 
 training_sse=list()
 dev_sse=list()
 for l in landas:
-	results = solve_lrn(x_train, y_train, alpha=1,landa=l,n_epoch=10000)
+	results = solve_lrn(x_train, y_train, alpha=0.1,landa=l,n_epoch=100)
 	w=results[0]
 	sse=test(w,x_cross,y_cross)
 	dev_sse.append(sse)
 	training_sse.append(results[2][-1])
-print('training sse for all the landa values are:\n {}:\n'.format(training_sse))
-print('dev sse for all the landa values are:\n {}:\n'.format(dev_sse))
+print('training sse for all the lambda values are:\n {}:\n'.format(training_sse))
+print('dev sse for all the lambda values are:\n {}:\n'.format(dev_sse))
 if plot_mode:
 	plt.figure(6)
-	plt.xlabel('landa')
+	plt.xlabel('lambda')
 	plt.ylabel('SSE')
-	plt.plot(landas,dev_sse)
-	plt.plot(landas,training_sse)
+	plt.plot([log(landa,10) for landa in landas],dev_sse)
+	plt.plot([log(landa,10) for landa in landas],training_sse)
 	plt.legend(['Validation SSE','Training SSE'], loc='upper right')
 	plt.show()
 
 
-# In[ ]:
+# In[128]:
 
 
-a=np.arange(5)
+# JUST CHECKING STUFF, NOT FOR THE HOMEWORK
+# a=np.arange(5)
+'''
 print('if a is an ndarray')
 print('shape of a is {}'.format(a.shape))
 print('a is {}'.format(a))
@@ -350,17 +375,17 @@ print('shape of a is {}'.format(a.shape))
 print('a is {}'.format(a))
 print('np.dot(a.T,a) is {}'.format(np.dot(a,a.T)))
 print('a.T*a is {}'.format(a*a.T))
+'''
 
 
-
-# In[133]:
+# In[14]:
 
 
 # ============= Part 3.a =======================s
-data=gen_data("resources/PA1_train.csv",normalization=False)
+data=gen_data("PA1_train.csv",normalization=False)
 x_train=data[0]
 y_train=data[1]
-data=gen_data("resources/PA1_train.csv",normalization=False)
+data=gen_data("PA1_train.csv",normalization=False)
 x_cross=data[0]
 y_cross=data[1]
 #alphas=[1,1e-3,1e-6,1e-9,1e-15,1e-30,1e-100,0]
@@ -369,7 +394,7 @@ alphas=[1,1e-3,1e-6,1e-9,1e-15,0]
 training_sse=list()
 dev_sse=list()
 for a in alphas:
-	results = solve_lr(x_train, y_train, alpha=a,n_epoch=10000)
+	results = solve_lr(x_train, y_train, alpha=a,n_epoch=100)
 	w=results[0]
 	sse=test(w,x_cross,y_cross)
 	dev_sse.append(sse)
@@ -386,18 +411,38 @@ if plot_mode:
 	plt.show()
 
 
-# In[144]:
+# In[13]:
 
 
 # Predictions:
-x_test=gen_test_data("resources/PA1_test.csv",normalization=True)
-results = solve_lrn(x_train, y_train, alpha=1.9,landa=0,n_epoch=10000)
+x_test=gen_test_data("PA1_test.csv",normalization=True)
+results = solve_lrn(x_train, y_train, alpha=0.001,landa=0.001,n_epoch=10000)
 w=results[0]
 y_test=predict(w,x_test)
 y_test=np.squeeze(np.asarray(y_test))
-y_test
+print(y_test)
 np.savetxt("Predicted_y.csv", y_test, delimiter=",")
 print(w)
+
+
+# In[227]:
+
+
+x1 = np.arange(12).reshape((6, 2))
+x1 = np.asmatrix(x1)
+print('shape of x1: {}'.format(x1.shape))
+x2 = np.arange(6)
+x2 = np.asmatrix(x2).T
+print('shape of x2: {}'.format(x2.shape))
+print('x1: \n')
+print(x1)
+print('x2: \n')
+print(x2)
+mult=np.multiply(x1, x2)
+print('mult is: {}'.format(mult))
+mult_sum=np.sum(mult,axis=0)
+print('\nsum_mult is  {}'.format(mult_sum))
+mult_sum[0]
 
 
 # In[ ]:
