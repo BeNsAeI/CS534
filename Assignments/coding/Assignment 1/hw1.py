@@ -12,11 +12,17 @@ if(len(sys.argv) > 1):
 	if sys.argv[1][0] == 'p':
 		print("executing: "+sys.argv[1]+" -> "+str(len(sys.argv[1]))+" Plot mode enabled")
 		plot_mode = True
-	if sys.argv[1][0] == 'h' or sys.argv[2][0] == 'h':
+	if sys.argv[1][0] == 'h':
 		print("executing: h -> "+str(len(sys.argv[1]))+" High performance mode enabled")
 		n_epoch_scale = 10
 	sleep(5)
-
+if(len(sys.argv) > 2):
+	if sys.argv[1][0] == 'p' or sys.argv[2][0] == 'p':
+		print("executing: "+sys.argv[1]+" -> "+str(len(sys.argv[1]))+" Plot mode enabled")
+		plot_mode = True
+	if sys.argv[1][0] == 'h' or sys.argv[2][0] == 'h':
+		print("executing: h -> "+str(len(sys.argv[1]))+" High performance mode enabled")
+		n_epoch_scale = 10
 # Import neccasary libraries
 import numpy as np
 import pandas as pd
@@ -184,7 +190,7 @@ def predict(w,x_test):
 
 
 # ========== Part 0.(a) ================
-train_data=pd.read_csv("PA1_train.csv")
+train_data=pd.read_csv("resources/PA1_train.csv")
 train_data=train_data.drop('dummy',1)
 train_data=train_data.drop('id',1)
 
@@ -260,7 +266,7 @@ w=np.random.rand(x_train.shape[1])
 
 print('Part 1 -------------------')
 # ============= Part 1.a =======================s
-data=gen_data("PA1_dev.csv",normalization=True)
+data=gen_data("resources/PA1_dev.csv",normalization=True)
 x_cross=data[0]
 y_cross=data[1]
 #alphas=[3,2,1.99,1.5,1.2,1.1,1,0.1,1e-2,1e-3,1e-4,1e-5,1e-6,1e-7]
@@ -382,10 +388,10 @@ print('a.T*a is {}'.format(a*a.T))
 
 
 # ============= Part 3.a =======================s
-data=gen_data("PA1_train.csv",normalization=False)
+data=gen_data("resources/PA1_train.csv",normalization=False)
 x_train=data[0]
 y_train=data[1]
-data=gen_data("PA1_train.csv",normalization=False)
+data=gen_data("resources/PA1_train.csv",normalization=False)
 x_cross=data[0]
 y_cross=data[1]
 #alphas=[1,1e-3,1e-6,1e-9,1e-15,1e-30,1e-100,0]
@@ -415,13 +421,13 @@ if plot_mode:
 
 
 # Predictions:
-x_test=gen_test_data("PA1_test.csv",normalization=True)
+x_test=gen_test_data("resources/PA1_test.csv",normalization=True)
 results = solve_lrn(x_train, y_train, alpha=0.001,landa=0.001,n_epoch=10000)
 w=results[0]
 y_test=predict(w,x_test)
 y_test=np.squeeze(np.asarray(y_test))
 print(y_test)
-np.savetxt("Predicted_y.csv", y_test, delimiter=",")
+np.savetxt("resources/Predicted_y.csv", y_test, delimiter=",")
 print(w)
 
 
