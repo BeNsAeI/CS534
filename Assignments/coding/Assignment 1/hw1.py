@@ -426,7 +426,7 @@ if plot_mode:
 
 
 # Predictions:
-data=gen_data("PA1_train.csv",normalization=True)
+data=gen_data("resources/PA1_train.csv",normalization=True)
 x_train=data[0]
 y_train=data[1]
 
