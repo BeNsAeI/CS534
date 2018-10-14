@@ -1,4 +1,7 @@
 Instructions:
+
+- Programming language used is python 2.7
+
 - For running the code by itself run:
 - make
 
