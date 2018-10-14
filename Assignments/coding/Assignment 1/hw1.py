@@ -109,7 +109,7 @@ def solve_lr(x_train,y_train,alpha,n_epoch):
 	counter=0
 	while grad_norm>0.1:
 		e=X*w-y.T
-		grad=np.multiply(e,X,dtype=np.float128)
+		grad=np.multiply(e,X,dtype=np.float64) #float128
 		grad=np.sum(grad,axis=0)/X.shape[0]
 		# case 1 separate w0 and other w terms
 		#w[0] = w[0] - alpha * e[0]
@@ -117,7 +117,7 @@ def solve_lr(x_train,y_train,alpha,n_epoch):
 		# case to follow the same implementation for all w terms
 		w = w - alpha * grad
 		sse=np.dot(e.T,e)[0,0]/X.shape[0]
-		grad_norm=np.square(grad.T*grad,dtype=np.float128)[0,0]
+		grad_norm=np.square(grad.T*grad,dtype=np.float64)[0,0] #float128
 		#print(0.5*sse)
 		counter+=1
 		counters.append(counter)
@@ -141,7 +141,9 @@ def solve_lrn(x_train,y_train,alpha,landa,n_epoch):
 	counter=0
 	while grad_norm>0.01:
 		e=X*w-y.T
-		grad=np.multiply(e,X,dtype=np.float128)
+		#print (e)
+		#print (X)
+		grad=np.multiply(e,X,dtype=np.float64) #float128
 		grad=np.sum(grad,axis=0)/X.shape[0]
 		w = np.squeeze(np.asarray(w))
 		grad = np.squeeze(np.asarray(grad, dtype=np.float64))
@@ -165,7 +167,7 @@ def solve_lrn(x_train,y_train,alpha,landa,n_epoch):
 		#print (sse)
 		#sleep(5)
 		#print(sum([x**2 for x in grad.T])) #cross-check for grad_norm calculation
-		grad_norm=np.sum(np.multiply(grad,grad,dtype=np.float128), dtype=np.float128)
+		grad_norm=np.sum(np.multiply(grad,grad,dtype=np.float64), dtype=np.float64) #float128
 		grad_norm=np.sqrt(grad_norm)
 		#print(grad_norm)
 		#print(0.5*sse)
@@ -424,6 +426,10 @@ if plot_mode:
 
 
 # Predictions:
+data=gen_data("PA1_train.csv",normalization=True)
+x_train=data[0]
+y_train=data[1]
+
 x_test=gen_test_data("resources/PA1_test.csv",normalization=True)
 print("x_train is:")
 print(x_train)
