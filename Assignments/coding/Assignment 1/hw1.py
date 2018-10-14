@@ -161,6 +161,9 @@ def solve_lrn(x_train,y_train,alpha,landa,n_epoch):
 		e=X*w-y.T
 		# print(sum([x**2 for x in e])) cross-check for sse calculation
 		sse=np.dot(e.T,e)[0,0]/X.shape[0]
+		#print(np.dot(e.T,e))
+		#print (sse)
+		#sleep(5)
 		#print(sum([x**2 for x in grad.T])) #cross-check for grad_norm calculation
 		grad_norm=np.sum(np.multiply(grad,grad))
 		grad_norm=np.sqrt(grad_norm)
