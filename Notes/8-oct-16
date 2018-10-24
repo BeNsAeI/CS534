@@ -1,0 +1,117 @@
+Convergence theorem:
+- The convergance rate depend on margin. it converges faster for data with larger margin.
+ - imagin that the game between items are wider (easier to make a decision probabilitically)
+- Th perceptron algorithm convergence does not depend on the number of training examples or number of features.
+
+Kernel Methods:
+- feature mapping to address non-linear seperability
+ - What is feature mapping: We introduce more features in order to make the data linearly seperable.
+ - increase the dimentions of the problem in order to find a way to seperate the data
+
+Non linearly seperable data:
+- we need to look into more features and thus iincreasing the dimention of the problem
+- Problem with introducing more dimentions are:
+ - assume m input dimentions
+ - number of quadratic terms:
+  - 1+m+m+m(m-1)/2 ~ O(m^2)
+ - Higher order features will kick this up to O(m^3)
+ - this will go high in millions of features very fast!
+ - we can make the feature space very complex but the price is computation
+
+Update rule for perceptron:
+ - w_{t+1} = w_t + y_tx_t
+ - w_t = \sum_{i \in s_t} y_ixi
+ - \hat{y}(x) = sign (\sum_{i \in s_t} y_ix_i.x)
+ - \hat{y}(x) = sign (\sum_{i \in s_t} y_i\phi(x_i)...)
+
+Kernel trick:
+- take feature vectors a and b before mapping:
+ - (a.b +1)^2 gives you the feature map of both
+ - this trick reduces time from quadratic to linear time
+
+- Definition: A function k(x,x') is called a kernel function if k(x,x') =< \phi(x), \phi(x')> for some mapping function \phi
+- implication: we can simply replace any occurance of dot product <x,x'> with a kernel function k that computes the results
+
+Revised perceptron:
+- \hat(x) = sign (\sum_{i \in S} y_iK(x_i,x))
+
+revised Learning algorithm:
+- let W <- (0,0,...,0)
+- repeat if iter \leq iters
+ - for every training example m = 1,..., n
+  - u_m = w^Tx_m
+  - if y_mu_m \leq 0
+   - w <- w + y_mx_m
+ iter = iter + 1
+
+Kernelized perceptron:
+- This is more efficient because we keep track of number of errors instead of keeping the error values by themselves
+- Let \a;pha_i = 0 \forall i = 1,...,n
+ - repeat if iter \leq iters
+  - for every training example m = 1,...,n
+   - u_m = \sum_{i = 1 to n} \alpha_iy_ik(x_i,x_m)
+   - if y_mu_m \leq 0
+    - \alpha_m <- \alpha + 1
+  - iter = iter + 1
+
+What functions are kernels:
+- A kernel function  can be intuitivly viewed as computing some similarity measure between examples
+- We do not use the transitory fucntion from \phi and just use the Kernel instead (faster
+- 
+
+Test kernel functions:
+- Kernel matrix are square and symetric
+- Mercer theorem
+ - a function K is a kernel function iff for anuy finite sample x_1,x_2,...,x_m its corresponding kernel matrix
+   is positive semi-definite (has non-negative eigenvalues)
+
+Kernel examples:
+- Polynomial Kernels
+ - (x_1.x_2)
+ - (x_1.x_2 + 1)^p
+ - (x_1 . x_2)^p: map to all polynomial power of p terms
+- Radio basis function kernel (RBF)
+ - exp^{\frac{|x_i-x_j|^2}{2\sigma^2}} where \sigma is width of the kernel
+
+Closure property fo kernels:
+- What is closure property:
+- if K_1 and K_2 are kernel functions, then the following are all kernel functions:
+ - K(x,y) k_1(x,y) + k_2(x,y)
+  - \phi = \phi_ 1 + \phi_2
+ - K(x,y) = aK_1(x,y), where a > 0
+  - \pji = \sqrt(a)\phi_1
+ - K(x,y) = K_1(x,y)K_2(x,y)
+  - ...
+
+- Key choices in applying kernels:
+ - Selecting the kernel function
+  - in practice we ofter try different kernel functions and use (cross-) validation to choose
+  - linear, polynomial, and RBF kernels are popular choices
+  - One can also construct a kernel using linear combinations of different kernels
+ - Select Kernel parameterss:
+  - ...
+
+Revisiting Linear Regression:
+- max_w \frac{1}{2} ||y - Xw|| ^ 2 + \frac{\lambda}{2}w^Tw
+- X is data matrix
+- y is the vector of ground truth
+closed form:
+- w = (\lambdaI + X^TX)^{-1}X^Ty
+ - where I is the identity matrix 
+
+Kernelizing linear regression:
+- learned function:
+ - \hat{f}(x) = w^Tx
+ - Kernelized: \hat{f}(x) = \sum_i \alpha K(x_i,x)
+  - plug w = \sum_i \aplha_ix_i and replace dot product with kernel function
+- Objective:
+ - originally: \frac{1}{2} ||y - Xw|| ^ 2 + \frac{\lambda}{2}w^Tw
+ - Kernelized: \frac{1}{2} ||y - \alphaK|| ^ 2 + \frac{\lambda}{2}\alphaa^TK\alpha
+- Closed form:
+ - \alpha = (K + \lambdaI)^{-1}y
+
+- A good indication is to check if dimentions match up:
+- [nxn][nx1] = [1xn]
+
+General application of Kernel function:
+- Many learning tasks are farmed as optimization problems and their solutions are some weighted sum ob the input training samples

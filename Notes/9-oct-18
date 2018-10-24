@@ -1,0 +1,62 @@
+Support V ector machines
+- Functional and geometric margins of a classifier
+- SVM objective; Quadratic objective with linear constraints
+- Lagrangian optimization
+- ...
+
+Intuition of margin:
+- our confidence in result depends on how far the point is from decision boundries
+
+Functional Margin:
+- \hat{\gama}^i = y^i(w^Tx^i+b)
+- Positive means correcct decision, negative means wrong decision
+- we can make it arbiturarily large without any meaningful changes
+- Instead, we will look at geometric margin
+
+Geometric margin:
+- This is the distance
+- \hat{\gama}^i = \frac{y^i(w^Tx^i+b)}{||w||}
+- Geometric margin will be smallest of all \gama^i
+- We want to maximize the absolute of \gama
+- we want the geometric boundy to be as far as it could be
+
+Maximum Margin classifier:
+- Let \gama' = \gama.||w||
+- Max_{w,b,\gama'} \frac{\gama'}{||w||}
+ - subject to y^i(w^Tx^i + b) \geq \gama', i= 1,..,N
+ - \gama' is practically Functional margin
+ - we can scale it as much as we want
+ * we scale it to be 1
+  - Max_{w,b,\gama'} \frac{1}{||w||}
+  - y^i(w^Tx^i + b) \geq 1, i= 1,..,N
+ - This is equivalent to
+
+- This is a quadratic optimization problem with linear constraint
+- Dual lagrangian:
+ - Primal: min_{x}max_{\alpha \geq 0}L(x,a)
+ - Dual: max_{\alpha \geq 0}min_{x}L(x,a)
+
+- We need to update Geometric margin every loop! otherwise the we are pushing the margin over false positives
+- w = \sum^}n|_{i = 1} \alpha_iy^ix^i
+- sum^}n|_{i = 1} \alpha_iy^i = 0
+- Let's plug in the w
+- The dual problem slide
+- once you find alpha, you can find the w
+
+- For optimization problems, just use the blackbox solvers
+
+* if the data is not linearly seperable, project it into higher dimention -> Kernel SVM
+- replace the dot prodoct with a kernel function: <x^i,x^j> -> K(x^i, x^j)
+
+Maximum margin overfitting to outliers:
+- This might cause overfitting
+- Allo Functional margin to be less than 1
+ - y^i(w^Tx^i+b) \geq 1 - \psi_i
+ - we also need a penalty
+ - min_{w,b,\psi_i} ||w||^2 + c \sum^N_{i=1} \psi)i
+
+* this is soft margin SVM
+ - min_{w,b}||w||^2 + c \sum^N_i max(0,1 - y^i (w^Tx^i + b))
+* Loss with regularization:
+ - min_{w,b}\lambda||w||^2 + \sum^N_i max(0,1 - y^i (w^Tx^i + b))
+* solution is same as non soft margin, it's just that \alpha_i is bound by 0 and c
