@@ -5,8 +5,8 @@ import matplotlib.pyplot as plt
 import os,time
 from tempfile import TemporaryFile
 outfile = TemporaryFile()
-path="E:\Computer Science\Mchine learning Fall 2018\Implementation assignment 2"
-os.chdir(path)
+#path="E:\Computer Science\Mchine learning Fall 2018\Implementation assignment 2"
+#os.chdir(path)
 os.getcwd()
 np.random.seed(0)
 train_file="pa2_train.csv"
