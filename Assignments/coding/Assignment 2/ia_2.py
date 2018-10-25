@@ -1,12 +1,12 @@
 import os
 import argparse
 import numpy as np
-import matplotlib.pyplot as plt
 
 def main():
 	x_train, y_train = get_data("pa2_train.csv")
 	parser = argparse.ArgumentParser()
 	parser.add_argument("-p", "--plot", action='store_true', help="if set, script will show plots")
+	parser.add_argument("-s", "--save", action='store_true', help="if set, a copy of kernels will be stored")
 	args = parser.parse_args()
 
 	x_valid, y_valid = get_data("pa2_valid.csv")
@@ -15,7 +15,7 @@ def main():
 	iters = 15
 	first_part(x_train, y_train, x_valid, y_valid, x_test, iters, args.plot)
 	second_part(x_train, y_train, x_valid, y_valid, iters, args.plot)
-	third_part(x_train, y_train, x_valid, y_valid, x_test, iters, args.plot)
+	third_part(x_train, y_train, x_valid, y_valid, x_test, iters, args.plot, args.save)
 
 def get_data(filename, test=False):
 	x = np.genfromtxt(filename, delimiter=',', dtype=float)
@@ -76,7 +76,7 @@ def second_part(x_train, y_train, x_valid, y_valid, iters, plot):
 	if plot:
 		plot_accuracies(train_accuracies, valid_accuracies)
 
-def third_part(x_train, y_train, x_valid, y_valid, x_test, iters, plot):
+def third_part(x_train, y_train, x_valid, y_valid, x_test, iters, plot, save):
 	all_p = [1, 2, 3, 7, 15]
 	all_alphas = {} # alphas for all p values and all iterations
 
@@ -86,7 +86,7 @@ def third_part(x_train, y_train, x_valid, y_valid, x_test, iters, plot):
 		print "Part 3. Preparing kernel matrix for training with p=%d" % p
 		print "-------------------------------"
 		filename = 'kernels/kernel_train_p%d.csv' % p
-		kernel = get_kernel(filename, x_train, x_train, p)
+		kernel = get_kernel(filename, x_train, x_train, p,save)
 
 		# train
 		print "-------------------------------"
@@ -100,7 +100,7 @@ def third_part(x_train, y_train, x_valid, y_valid, x_test, iters, plot):
 		print "Part 3. Preparing kernel matrix for validation with p=%d" % p
 		print "-------------------------------"
 		filename = 'kernels/kernel_valid_p%d.csv' % p
-		kernel = get_kernel(filename, x_valid, x_train, p)
+		kernel = get_kernel(filename, x_valid, x_train, p, save)
 
 		# validate
 		print "-------------------------------"
@@ -119,7 +119,7 @@ def third_part(x_train, y_train, x_valid, y_valid, x_test, iters, plot):
 	print "Part 3. Preparing kernel matrix for predicion with p=%d" % p
 	print "-------------------------------"
 	filename = 'kernels/kernel_test_p%d.csv' % p
-	kernel = get_kernel(filename, x_test, x_train, p)
+	kernel = get_kernel(filename, x_test, x_train, p, save)
 
 	alpha = all_alphas[p][iterations-1]
 	predictions = kernel_predict(kernel, y_train, alpha, p)
@@ -129,7 +129,7 @@ def third_part(x_train, y_train, x_valid, y_valid, x_test, iters, plot):
 	print "Saved to %s" % filename
 	print "-------------------------------"
 
-def get_kernel(filename, x_1, x_2, p):
+def get_kernel(filename, x_1, x_2, p, save):
 	kernel = None
 
 	if os.access(filename, os.R_OK):
@@ -138,11 +138,13 @@ def get_kernel(filename, x_1, x_2, p):
 	else:
 		print "File %s not found. Will create new one." % filename
 		kernel = compute_kernel(x_1, x_2, p)
-		np.savetxt(filename, kernel)
+		if(save):
+			np.savetxt(filename, kernel)
 
 	return kernel
 
 def plot_accuracies(train_accuracies, valid_accuracies):
+	import matplotlib.pyplot as plt
 	plt.figure()
 	plt.plot(range(1, len(train_accuracies)+1), train_accuracies)
 	plt.plot(range(1, len(valid_accuracies)+1), valid_accuracies)
