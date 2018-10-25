@@ -77,45 +77,30 @@ def second_part(x_train, y_train, x_valid, y_valid, iters, plot):
 		plot_accuracies(train_accuracies, valid_accuracies)
 
 def third_part(x_train, y_train, x_valid, y_valid, x_test, iters, plot):
-	all_p = [ 2, 3, 7, 15]
+	all_p = [1, 2, 3, 7, 15]
+	all_alphas = {} # alphas for all p values and all iterations
 
-	m = x_train.shape[0]
 	for p in all_p:
 		# compute kernel or upload existing from file, if exists
 		print "-------------------------------"
 		print "Part 3. Preparing kernel matrix for training with p=%d" % p
 		print "-------------------------------"
-		kernel = None
 		filename = 'kernels/kernel_train_p%d.csv' % p
-
-		if os.access(filename, os.R_OK):
-			print "Processing file %s" % filename
-			kernel = np.loadtxt(filename)
-		else:
-			print "File %s not found. Will create new one." % filename
-			kernel = compute_kernel(x_train, x_train, p)
-			np.savetxt(filename, kernel)
+		kernel = get_kernel(filename, x_train, x_train, p)
 
 		# train
 		print "-------------------------------"
 		print "Part 3. Training with p=%d" % p
 		print "-------------------------------"
 		alphas, train_accuracies = kernel_perceptron(kernel, y_train, iters)
+		all_alphas[p] = alphas
 		#np.savetxt('my_out.txt', weights)
 
 		print "-------------------------------"
 		print "Part 3. Preparing kernel matrix for validation with p=%d" % p
 		print "-------------------------------"
-		kernel = None
 		filename = 'kernels/kernel_valid_p%d.csv' % p
-
-		if os.access(filename, os.R_OK):
-			print "Processing file %s" % filename
-			kernel = np.loadtxt(filename)
-		else:
-			print "File %s not found. Will create new one." % filename
-			kernel = compute_kernel(x_valid, x_train, p)
-			np.savetxt(filename, kernel)
+		kernel = get_kernel(filename, x_valid, x_train, p)
 
 		# validate
 		print "-------------------------------"
@@ -127,13 +112,35 @@ def third_part(x_train, y_train, x_valid, y_valid, x_test, iters, plot):
 			plot_accuracies(train_accuracies, valid_accuracies)
 
 	# predict
+	p = 3
+	iterations = 6
 	print "-------------------------------"
-	print "Part 3. Prediction - TODO"
-	#predictions = 
-	#np.savetxt(filename, predictions)
-	#print "Saved to %s" % filename
+	print "Part 3. Prdiction with p=%d and %d iterations" % (p, iterations)
+	print "Part 3. Preparing kernel matrix for predicion with p=%d" % p
+	print "-------------------------------"
+	filename = 'kernels/kernel_test_p%d.csv' % p
+	kernel = get_kernel(filename, x_test, x_train, p)
+
+	alpha = all_alphas[p][iterations-1]
+	predictions = kernel_predict(kernel, y_train, alpha, p)
+
+	filename = 'kplabel.csv'
+	np.savetxt(filename, predictions)
+	print "Saved to %s" % filename
 	print "-------------------------------"
 
+def get_kernel(filename, x_1, x_2, p):
+	kernel = None
+
+	if os.access(filename, os.R_OK):
+		print "Processing file %s" % filename
+		kernel = np.loadtxt(filename)
+	else:
+		print "File %s not found. Will create new one." % filename
+		kernel = compute_kernel(x_1, x_2, p)
+		np.savetxt(filename, kernel)
+
+	return kernel
 
 def plot_accuracies(train_accuracies, valid_accuracies):
 	plt.figure()
