@@ -1,2 +1,13 @@
 k_train.npy
-Kernel/
+kernels/
+kernels/kernel_test_p3.csv
+kernels/kernel_train_p1.csv
+Kernels/kernel_train_p3.csv
+kernels/kernel_valid_p15.csv
+kernels/kernel_valid_p2.csv
+kernels/kernel_valid_p7.csv
+kernels/kernel_train_p15.csv
+kernels/kernel_train_p2.csv
+kernels/kernel_train_p7.csv
+kernels/kernel_valid_p1.csv
+kernels/kernel_valid_p3.csv

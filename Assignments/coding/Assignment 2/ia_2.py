@@ -56,7 +56,7 @@ def first_part(x_train, y_train, x_valid, y_valid, x_test, iters, plot):
 	print "-------------------------------"
 
 	if plot:
-		plot_accuracies(train_accuracies, valid_accuracies)
+		plot_accuracies(train_accuracies, valid_accuracies,iter='1')
 
 def second_part(x_train, y_train, x_valid, y_valid, iters, plot):
 
@@ -74,7 +74,7 @@ def second_part(x_train, y_train, x_valid, y_valid, iters, plot):
 	valid_accuracies = perceptron_validate(all_weights, x_valid, y_valid)
 
 	if plot:
-		plot_accuracies(train_accuracies, valid_accuracies)
+		plot_accuracies(train_accuracies, valid_accuracies,iter='2')
 
 def third_part(x_train, y_train, x_valid, y_valid, x_test, iters, plot, save):
 	all_p = [1, 2, 3, 7, 15]
@@ -109,7 +109,7 @@ def third_part(x_train, y_train, x_valid, y_valid, x_test, iters, plot, save):
 		valid_accuracies = kernel_validate(kernel, y_valid, p, alphas, y_train)
 
 		if plot:
-			plot_accuracies(train_accuracies, valid_accuracies)
+			plot_accuracies(train_accuracies, valid_accuracies,iter=('3 - '+ str(p)))
 
 	# predict
 	p = 3
@@ -143,13 +143,14 @@ def get_kernel(filename, x_1, x_2, p, save):
 
 	return kernel
 
-def plot_accuracies(train_accuracies, valid_accuracies):
+def plot_accuracies(train_accuracies, valid_accuracies,iter):
 	import matplotlib.pyplot as plt
 	plt.figure()
 	plt.plot(range(1, len(train_accuracies)+1), train_accuracies)
 	plt.plot(range(1, len(valid_accuracies)+1), valid_accuracies)
 	plt.gca().legend(('Training error','Validation error'))
-	plt.show()
+	#plt.show()
+	plt.savefig('figure '+ iter + '.png');
 
 def kernel_function(x, y, p):
 	k = (1 + np.dot(x.T, y))**p
