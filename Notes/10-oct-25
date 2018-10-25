@@ -1,0 +1,62 @@
+- C is the penalty for traveling inside the tube
+- increasing c shrinks the margin
+- Number of support vectors could be between 2 and infinity
+ - Too little is over fitting
+ - too many of them, under fitting
+
+Neural Networks
+- Neurons and activation functions
+- Multilayer Perceptron MLP NNs
+- ...
+
+Commonly used activation Functions:
+- Step functions: f(x) = 1 or 0 based on sign of x
+- Sigmoid function \sigma(x) = 1/(1+e^{-x})
+- Tanh function tanh(x) = 2\sigma(2x)-1
+- Rectified linear Unit (ReLu): f(x) = max(0,x)
+
+- input layer: 1, x_1, x_2, x_3 ...
+- Hidden  layer: Signal processing, feature extraction, etc
+- Output layer: has a biased term
+
+Repreentational Power:
+- boolean formulas can be expressed in NN
+- Line numbers are the weights
+- we can have And or Or units
+- circle represents a biased term
+
+(x_1 and not x_2) or (x_2 and x_3)
+- Hidden layer:
+ - first neuran needs:
+  - 1: -0.5
+  - x_1: 1
+  - x_2: -1
+ - second neuran needs:
+  - 1: -1.5
+  - x_2: 1
+  - x_3: 1
+
+Output layer:
+- Bias 1: -0.5
+- neuran 1: 1
+- neuran 2: 1
+
+Condition;
+- x_1 - x_2 - 0.5 > 0?
+
+* Deminishing gradient problem
+___
+
+Example:
+XOR(x1,x2)
+- Do at home
+- Any boolean formula could be expressed in conjunctions form s(sa O sb) O s(sa O sb) (O: operand, s: sign, a/b: boolean variables)
+
+___
+
+Training: Back propegate
+- input x ans \hat{y}
+- L(w) = \sum^n_{i=1}(\hat{y}(x_i,w) - y_i)^2
+- several chain rules: df/dx = df/dy*dy/dx
+- predict, compute loss, feed back down
+- repeat

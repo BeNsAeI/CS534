@@ -109,7 +109,7 @@ def predict2(x_test,x_train,y_train, alpha,p):
     for i in range(x_test.shape[0]):
         s=0
         for x,y,a in zip(x_train,y_train, alpha):
-            if a<0.0001:
+            if a<1:
                 continue
             s += a * y * k(x_test[i], x, p)   # in general, if you are planning us sv indexing for x_valid, you should say   x_valid[i][sv][0]
         y_pred[i]=np.sign(s)
@@ -122,7 +122,7 @@ def kernel_perceptron(x_train, y_train, x_valid, y_valid, p , iters):
     n=x_train.shape[0]
     f=x_train.shape[1]
     alpha=np.zeros(n)
-    t = 0
+    t = 0		# Number of iterations -> for t in range(0:iters) ** Parallelize
     # k_matrix = gram(x_train, p)
     k_matrix = np.load('k_train.npy')
     #print('shape of k matrix loaded: {}'.format(k_matrix.shape))
