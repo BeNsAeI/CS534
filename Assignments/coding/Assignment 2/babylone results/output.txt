@@ -1,0 +1,303 @@
+-------------------------------
+Part 1. Training
+-------------------------------
+Iteration 1, accuracy 0.907733224223
+Iteration 2, accuracy 0.936170212766
+Iteration 3, accuracy 0.93821603928
+Iteration 4, accuracy 0.944762684124
+Iteration 5, accuracy 0.948240589198
+Iteration 6, accuracy 0.948445171849
+Iteration 7, accuracy 0.949058919804
+Iteration 8, accuracy 0.949058919804
+Iteration 9, accuracy 0.951104746318
+Iteration 10, accuracy 0.951718494272
+Iteration 11, accuracy 0.951923076923
+Iteration 12, accuracy 0.955605564648
+Iteration 13, accuracy 0.953559738134
+Iteration 14, accuracy 0.955605564648
+Iteration 15, accuracy 0.954787234043
+-------------------------------
+Part 1. Validation
+-------------------------------
+Iteration 1, accuracy 0.933701657459
+Iteration 2, accuracy 0.945365254758
+Iteration 3, accuracy 0.934929404543
+Iteration 4, accuracy 0.948434622468
+Iteration 5, accuracy 0.936771025169
+Iteration 6, accuracy 0.943523634131
+Iteration 7, accuracy 0.937998772253
+Iteration 8, accuracy 0.938612645795
+Iteration 9, accuracy 0.947820748926
+Iteration 10, accuracy 0.939226519337
+Iteration 11, accuracy 0.940454266421
+Iteration 12, accuracy 0.942909760589
+Iteration 13, accuracy 0.942295887047
+Iteration 14, accuracy 0.952731737262
+Iteration 15, accuracy 0.9459791283
+-------------------------------
+Part 1. Prediction
+Saved to oplabel.csv
+-------------------------------
+-------------------------------
+Part 2. Training
+-------------------------------
+Iteration 1, accuracy 0.907733224223
+Iteration 2, accuracy 0.936170212766
+Iteration 3, accuracy 0.93821603928
+Iteration 4, accuracy 0.944762684124
+Iteration 5, accuracy 0.948240589198
+Iteration 6, accuracy 0.948445171849
+Iteration 7, accuracy 0.949058919804
+Iteration 8, accuracy 0.949058919804
+Iteration 9, accuracy 0.951104746318
+Iteration 10, accuracy 0.951718494272
+Iteration 11, accuracy 0.951923076923
+Iteration 12, accuracy 0.955605564648
+Iteration 13, accuracy 0.953559738134
+Iteration 14, accuracy 0.955605564648
+Iteration 15, accuracy 0.954787234043
+-------------------------------
+Part 2. Validation
+-------------------------------
+Iteration 1, accuracy 0.944751381215
+Iteration 2, accuracy 0.949662369552
+Iteration 3, accuracy 0.951503990178
+Iteration 4, accuracy 0.950890116636
+Iteration 5, accuracy 0.950276243094
+Iteration 6, accuracy 0.950276243094
+Iteration 7, accuracy 0.951503990178
+Iteration 8, accuracy 0.95211786372
+Iteration 9, accuracy 0.95211786372
+Iteration 10, accuracy 0.952731737262
+Iteration 11, accuracy 0.952731737262
+Iteration 12, accuracy 0.952731737262
+Iteration 13, accuracy 0.952731737262
+Iteration 14, accuracy 0.952731737262
+Iteration 15, accuracy 0.953959484346
+-------------------------------
+Part 3. Preparing kernel matrix for training with p=1
+-------------------------------
+File kernels/kernel_train_p1.csv not found. Will create new one.
+-------------------------------
+Part 3. Training with p=1
+-------------------------------
+Iteration 1, accuracy 0.907733224223
+Iteration 2, accuracy 0.936170212766
+Iteration 3, accuracy 0.93821603928
+Iteration 4, accuracy 0.944762684124
+Iteration 5, accuracy 0.948240589198
+Iteration 6, accuracy 0.948445171849
+Iteration 7, accuracy 0.949058919804
+Iteration 8, accuracy 0.949058919804
+Iteration 9, accuracy 0.951104746318
+Iteration 10, accuracy 0.951718494272
+Iteration 11, accuracy 0.951923076923
+Iteration 12, accuracy 0.955605564648
+Iteration 13, accuracy 0.953559738134
+Iteration 14, accuracy 0.956628477905
+Iteration 15, accuracy 0.951309328969
+-------------------------------
+Part 3. Preparing kernel matrix for validation with p=1
+-------------------------------
+File kernels/kernel_valid_p1.csv not found. Will create new one.
+-------------------------------
+Part 3. Validation with p=1
+-------------------------------
+Iteration 1, accuracy 0.933701657459
+Iteration 2, accuracy 0.945365254758
+Iteration 3, accuracy 0.934929404543
+Iteration 4, accuracy 0.948434622468
+Iteration 5, accuracy 0.936771025169
+Iteration 6, accuracy 0.943523634131
+Iteration 7, accuracy 0.937998772253
+Iteration 8, accuracy 0.938612645795
+Iteration 9, accuracy 0.947820748926
+Iteration 10, accuracy 0.939226519337
+Iteration 11, accuracy 0.940454266421
+Iteration 12, accuracy 0.942909760589
+Iteration 13, accuracy 0.942295887047
+Iteration 14, accuracy 0.9459791283
+Iteration 15, accuracy 0.940454266421
+-------------------------------
+Part 3. Preparing kernel matrix for training with p=2
+-------------------------------
+File kernels/kernel_train_p2.csv not found. Will create new one.
+-------------------------------
+Part 3. Training with p=2
+-------------------------------
+Iteration 1, accuracy 0.944762684124
+Iteration 2, accuracy 0.980155482815
+Iteration 3, accuracy 0.98977086743
+Iteration 4, accuracy 0.990384615385
+Iteration 5, accuracy 0.992021276596
+Iteration 6, accuracy 0.995703764321
+Iteration 7, accuracy 0.996931260229
+Iteration 8, accuracy 0.996317512275
+Iteration 9, accuracy 0.997954173486
+Iteration 10, accuracy 0.998977086743
+Iteration 11, accuracy 0.99856792144
+Iteration 12, accuracy 0.998977086743
+Iteration 13, accuracy 0.999386252046
+Iteration 14, accuracy 0.999181669394
+Iteration 15, accuracy 0.99856792144
+-------------------------------
+Part 3. Preparing kernel matrix for validation with p=2
+-------------------------------
+File kernels/kernel_valid_p2.csv not found. Will create new one.
+-------------------------------
+Part 3. Validation with p=2
+-------------------------------
+Iteration 1, accuracy 0.9459791283
+Iteration 2, accuracy 0.973603437692
+Iteration 3, accuracy 0.97912829957
+Iteration 4, accuracy 0.97605893186
+Iteration 5, accuracy 0.980969920196
+Iteration 6, accuracy 0.979742173112
+Iteration 7, accuracy 0.979742173112
+Iteration 8, accuracy 0.983425414365
+Iteration 9, accuracy 0.981583793738
+Iteration 10, accuracy 0.981583793738
+Iteration 11, accuracy 0.978514426028
+Iteration 12, accuracy 0.97912829957
+Iteration 13, accuracy 0.979742173112
+Iteration 14, accuracy 0.980356046654
+Iteration 15, accuracy 0.972375690608
+-------------------------------
+Part 3. Preparing kernel matrix for training with p=3
+-------------------------------
+File kernels/kernel_train_p3.csv not found. Will create new one.
+-------------------------------
+Part 3. Training with p=3
+-------------------------------
+Iteration 1, accuracy 0.954582651391
+Iteration 2, accuracy 0.9852700491
+Iteration 3, accuracy 0.991816693944
+Iteration 4, accuracy 0.996522094926
+Iteration 5, accuracy 0.999181669394
+Iteration 6, accuracy 0.996522094926
+Iteration 7, accuracy 0.999795417349
+Iteration 8, accuracy 1.0
+Iteration 9, accuracy 1.0
+Iteration 10, accuracy 1.0
+Iteration 11, accuracy 1.0
+Iteration 12, accuracy 1.0
+Iteration 13, accuracy 1.0
+Iteration 14, accuracy 1.0
+Iteration 15, accuracy 1.0
+-------------------------------
+Part 3. Preparing kernel matrix for validation with p=3
+-------------------------------
+File kernels/kernel_valid_p3.csv not found. Will create new one.
+-------------------------------
+Part 3. Validation with p=3
+-------------------------------
+Iteration 1, accuracy 0.96992019644
+Iteration 2, accuracy 0.980969920196
+Iteration 3, accuracy 0.981583793738
+Iteration 4, accuracy 0.984653161449
+Iteration 5, accuracy 0.984039287907
+Iteration 6, accuracy 0.984039287907
+Iteration 7, accuracy 0.982811540823
+Iteration 8, accuracy 0.982811540823
+Iteration 9, accuracy 0.982811540823
+Iteration 10, accuracy 0.982811540823
+Iteration 11, accuracy 0.982811540823
+Iteration 12, accuracy 0.982811540823
+Iteration 13, accuracy 0.982811540823
+Iteration 14, accuracy 0.982811540823
+Iteration 15, accuracy 0.982811540823
+-------------------------------
+Part 3. Preparing kernel matrix for training with p=7
+-------------------------------
+File kernels/kernel_train_p7.csv not found. Will create new one.
+-------------------------------
+Part 3. Training with p=7
+-------------------------------
+Iteration 1, accuracy 0.94414893617
+Iteration 2, accuracy 0.985883797054
+Iteration 3, accuracy 0.995294599018
+Iteration 4, accuracy 0.999386252046
+Iteration 5, accuracy 1.0
+Iteration 6, accuracy 1.0
+Iteration 7, accuracy 1.0
+Iteration 8, accuracy 1.0
+Iteration 9, accuracy 1.0
+Iteration 10, accuracy 1.0
+Iteration 11, accuracy 1.0
+Iteration 12, accuracy 1.0
+Iteration 13, accuracy 1.0
+Iteration 14, accuracy 1.0
+Iteration 15, accuracy 1.0
+-------------------------------
+Part 3. Preparing kernel matrix for validation with p=7
+-------------------------------
+File kernels/kernel_valid_p7.csv not found. Will create new one.
+-------------------------------
+Part 3. Validation with p=7
+-------------------------------
+Iteration 1, accuracy 0.963167587477
+Iteration 2, accuracy 0.972375690608
+Iteration 3, accuracy 0.977286678944
+Iteration 4, accuracy 0.977286678944
+Iteration 5, accuracy 0.977286678944
+Iteration 6, accuracy 0.977286678944
+Iteration 7, accuracy 0.977286678944
+Iteration 8, accuracy 0.977286678944
+Iteration 9, accuracy 0.977286678944
+Iteration 10, accuracy 0.977286678944
+Iteration 11, accuracy 0.977286678944
+Iteration 12, accuracy 0.977286678944
+Iteration 13, accuracy 0.977286678944
+Iteration 14, accuracy 0.977286678944
+Iteration 15, accuracy 0.977286678944
+-------------------------------
+Part 3. Preparing kernel matrix for training with p=15
+-------------------------------
+File kernels/kernel_train_p15.csv not found. Will create new one.
+-------------------------------
+Part 3. Training with p=15
+-------------------------------
+Iteration 1, accuracy 0.930646481178
+Iteration 2, accuracy 0.973813420622
+Iteration 3, accuracy 0.989975450082
+Iteration 4, accuracy 0.989361702128
+Iteration 5, accuracy 0.992839607201
+Iteration 6, accuracy 0.997545008183
+Iteration 7, accuracy 0.997954173486
+Iteration 8, accuracy 0.99856792144
+Iteration 9, accuracy 0.998977086743
+Iteration 10, accuracy 0.998977086743
+Iteration 11, accuracy 0.998977086743
+Iteration 12, accuracy 0.999181669394
+Iteration 13, accuracy 0.999181669394
+Iteration 14, accuracy 0.999386252046
+Iteration 15, accuracy 0.999590834697
+-------------------------------
+Part 3. Preparing kernel matrix for validation with p=15
+-------------------------------
+File kernels/kernel_valid_p15.csv not found. Will create new one.
+-------------------------------
+Part 3. Validation with p=15
+-------------------------------
+Iteration 1, accuracy 0.949662369552
+Iteration 2, accuracy 0.964395334561
+Iteration 3, accuracy 0.961325966851
+Iteration 4, accuracy 0.965009208103
+Iteration 5, accuracy 0.965623081645
+Iteration 6, accuracy 0.965623081645
+Iteration 7, accuracy 0.965623081645
+Iteration 8, accuracy 0.965623081645
+Iteration 9, accuracy 0.965623081645
+Iteration 10, accuracy 0.965623081645
+Iteration 11, accuracy 0.965623081645
+Iteration 12, accuracy 0.965623081645
+Iteration 13, accuracy 0.965623081645
+Iteration 14, accuracy 0.965623081645
+Iteration 15, accuracy 0.965623081645
+-------------------------------
+Part 3. Prdiction with p=3 and 6 iterations
+Part 3. Preparing kernel matrix for predicion with p=3
+-------------------------------
+File kernels/kernel_test_p3.csv not found. Will create new one.
+Saved to kplabel.csv
+-------------------------------
