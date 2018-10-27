@@ -148,7 +148,7 @@ def plot_accuracies(train_accuracies, valid_accuracies,iter):
 	plt.figure()
 	plt.plot(range(1, len(train_accuracies)+1), train_accuracies)
 	plt.plot(range(1, len(valid_accuracies)+1), valid_accuracies)
-	plt.gca().legend(('Training error','Validation error'))
+	plt.gca().legend(('Training Accuracy','Validation Accuracy'))
 	#plt.show()
 	plt.savefig('figure '+ iter + '.png');
 
