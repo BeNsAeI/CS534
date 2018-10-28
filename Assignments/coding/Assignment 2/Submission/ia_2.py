@@ -150,7 +150,7 @@ def plot_accuracies(train_accuracies, valid_accuracies,iter):
 	plt.plot(range(1, len(valid_accuracies)+1), valid_accuracies)
 	plt.gca().legend(('Training Accuracy','Validation Accuracy'))
 	#plt.show()
-	plt.savefig('figure '+ iter + '.png');
+	plt.savefig('figure-'+ iter + '.png');
 
 def kernel_function(x, y, p):
 	k = (1 + np.dot(x.T, y))**p
@@ -178,7 +178,11 @@ def kernel_perceptron(kernel, y, iters):
 			u = np.dot(kernel[:, i], alpha * y)
 			if y[i] * u <= 0:
 				alpha[i] += 1
-			else:
+			#else:
+			#	correct_predictions += 1
+		for i in range(m):
+			u = np.dot(kernel[:, i], alpha * y)
+			if y[i] * u > 0:
 				correct_predictions += 1
 
 		accuracy = correct_predictions / float(m)
@@ -224,7 +228,11 @@ def online_perceptron(x, y, iters):
 			#loss += max(0, -1*u)
 			if u <= 0:
 				weights += y[i] * x[i]
-			else:
+			#else:
+			#	correct_predictions += 1
+		for i in range(m):
+			u = np.sign(y[i] * np.dot(x[i], weights))
+			if u > 0:
 				correct_predictions += 1
 
 		accuracy = correct_predictions / float(m)
@@ -256,17 +264,22 @@ def average_perceptron(x, y, iters):
 				weights += y[i] * x[i]
 				c = 0
 			else:
-				correct_predictions += 1
 				c += 1
-
+			#	correct_predictions += 1
 		if c > 0:
 			avg_w = ((s * avg_w) + (c * weights)) / (s + c)
+
+		for i in range(m):
+			u = np.sign(y[i] * np.dot(x[i], avg_w))
+			if u > 0:
+				correct_predictions += 1
 
 		accuracy = correct_predictions / float(m)
 		print "Iteration %s, accuracy %s" % (iter_+1, accuracy)
 		accuracies.append(accuracy)
 
 		all_weights.append(avg_w.copy())
+
 	return all_weights, accuracies
 
 def perceptron_validate(all_weights, x, y):
