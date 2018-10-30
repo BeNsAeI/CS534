@@ -1,0 +1,16 @@
+Cost Function:
+- Hypothesis function can be simplified by removing the y intercept:
+ - h_{\theta}(x) = \theta_0 \thimes x
+-> minimize_{\theta} \frac{1}{2m}\sum_{i=1}^m(\theta \times x_i - y_i)^2
+
+Hypothesis:
+- direct mapping of y as a function of x
+
+Cost function:
+- Mapping of cost as a function of parameter \theta
+- this is a porabola that we are trying to find the smallest point
+
+Contour plots or figures:
+- keeping both \theta still gives you a prabola but in 2 dimentions ( it's a 3D bow like shape)
+- Remember the goals is to come up with an automatic algorothm to find that minima
+- or in the other words to find the center of that concentric contours

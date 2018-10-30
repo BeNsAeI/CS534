@@ -1,0 +1,42 @@
+Linear reggression:
+- superwised learning
+ - you need the right answers to begin with for training
+ - linear regression is for solving regression problems
+ - original data set is the training set
+
+- Notations
+  - m = Number of training examples
+  - x's = inputs variables / features
+  - y's = output variables / target variables
+  - (x,y) = one training example / one row
+  - (x^i,y^i) = ith training example
+  - h(x) = Hypothesis function (equation for regression line)
+  - \theta_i = Parameters of a model
+                                      input x_{new}
+                                            |
+                                            v
+- Training sit -> learning algorithm -> function h
+                                            |
+                                            v
+                                 estimate output \hat{y}
+
+- h(x) maps x's to y's
+
+* how do we represent h?
+- h_\theta(x) = \theta_0 + \theta_1x
+
+- Linear functions are simple but we can always make it more complex
+- This is called linear regression with one variable (Univariate)
+
+Cost function:
+- minimize_{\theta_0, \theta_1} \frac{1}{2m}\sum_{i=1}^m(h_{\theta} (x_i) - y_i)^2
+ - we want our function h's prediction of x be as close as possible to y
+ - in other words, for each x and y, the difference squared to be as small as possible
+ - sum of all errors be as close as possible to 0
+ - \frac{1}{2m} makes no difference in minimization task, but simplifies future math
+- Now let's substitute h_{\theta} (x_i) with: \theta_0 + \theta_1 \times x_i
+
+- We call this a cost function j(\theta_0, \theta_1)
+
+
+* objective is to: minimize_{\theta_0, \theta_1}j(\theta_0, \theta_1)

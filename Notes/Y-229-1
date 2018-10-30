@@ -1,2 +1,26 @@
 CS229 Supliment content
-- 
+* Machinelearning algorithms use experience E, to predict task T with probability P
+
+Types of machine learning problems:
+- Superwised
+- Unsuperwised
+- Reindorcement
+
+Superwise learning:
+- Most common type of ML
+- A data set of correct answers need to be given in order to learn how to make predictions
+- A regression problem: predict a continueus value number
+- Classification: discrete value output(0,1,..,n)
+- feature or attributes are data input "clues"
+- you cam use infinite number of features and attributes
+
+Unsuperwised learning:
+- We don't know the data's nature and trying to find a structure in it
+ - Clustering algorithm (classification without knowing the answer)
+  - news classification, favorite movies, gene classification of DNA, etc
+ - SVD
+  - Coctail party problem
+
+ - svd: single value decomposition (octave)
+
+

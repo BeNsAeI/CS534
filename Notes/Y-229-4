@@ -1,0 +1,26 @@
+Gradient Decent:
+- An algorithm to help us find the center of the concentric graphs
+- or to find the minima
+- general minimization algorithm
+- Outline:
+ - Start with some \theta_0 and \theta_1 on the surface
+ - Keep changing \theta_0 and \theta_1 to reduce cost
+ - keep repeating until we end up with minimum
+
+- We might endup with local minima
+
+Algorithm:
+- repeat unti we converege (end up at bottom)
+ - for j in n (where n is number of features, in our case 0 and 1)
+  - \theta_j := \theta_j - \alpha \frac{\partial}{\partial\theta_j}J(\theta_0,..,\theta_n)
+
+- Notes on the algorithm:
+ - := is assignment
+ - \alpha is stepsize
+  - Too small: it takes forever
+  - too large: we risk jumping over the minimal, or even diverge
+  - \alpha does not need to chang esince gradient decent naturally changes step size
+ - all \theta's need to update simultaniously or it won't work
+ - \frac{\partial}{\partial\theta_j} is the partial derivative term
+ - This can get stuck on local minima
+ - 

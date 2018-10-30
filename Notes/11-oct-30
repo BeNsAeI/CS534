@@ -1,0 +1,78 @@
+inputs:
+- X = [1,x_1,x_2,x_3,x_4]^T - The input vector with bias
+- A = [1,a_6, a_7, a_8]^T the Putput of the hidden layer
+- W_i represents the weight vector leading to node i
+- w_i,j represent the weight connection from jth node to ith node (goes to i from j)
+- \hat{y} = \sigma(w_i.A)
+- Use a loss function
+- use a gradient for back propegation
+
+- Gradient depends on:
+ - Cost function J
+ - Activation function: \frac{d\sigma}{dx} = \sigma(x)(1-\sigma(x))
+  - We use this because the derivative looks good
+
+- Use sum of squared errors (\sum err^2)
+
+- \frac{\partialJ_i(W)}{\partial w_{i,j}} = \frac{\partial}{\partial w_{i,j}}\frac{1}{2} (\hat{y}-y)^2
+- To simplify: \delta = (\hat{y}_i - y_i)\hat{y}_i(1 - \hat{y}_i)
+- then \frac{\partialJ_i(W)}{\partial w_{i,j}} = \delta_i.\alpha_j
+
+Loss function:
+- If we define a loss function L for \hat{y}_i:
+ - L(\hat{y}_i)
+- \frac{dl}{dW_i} = \frac{dL(\hat{y}_i)}{d\hat{y}_i}\times frac{d\hat{y}_i}{dW_i}
+
+- Contribution of loss function: (\hat{y}_i - y_i)
+
+- \delta = \delta . w_{i,j} . \alpha_j(1-\alpha_j)
+Psuedocode:
+- initial weights with random values
+- repeat
+ - Begin Epoch
+  - for each training exampple:
+   - compute the network output
+   - compute loss
+   - back propegate:
+    - get gradient
+    - adjust weights
+ - End Epoch (convergence or stopping criteria)
+
+* We don't know what hidden layer learns!
+
+Training:
+- Not gauranteed to converge
+- Very likely oscolate or converge to local minima
+- Yoou need to figure out when to stop training
+- Do not use magic numbers!
+
+- Start Simple: linear preferably
+ - keep weights near 0
+ - avoid having very small gradients
+- Break symmetry
+ - equal weights could lead to not training since nothing woould change
+
+- Batch training: combine gradient step
+- Online: Take gradient steo of each example
+- Momentum: each update linearly combines the current gradient with previous update direction to ensure smoother convergence
+ - smooths out the convergence and training behvaior
+
+Stopping condition:
+- avoid over training:
+ - running too many epochs
+
+Over fitting avoidance:
+- not too many or not too few hidden layer nodes
+- Cross validation
+- Weight decay: multiple weights by a factor to shrink them down after each epoch
+
+Input/output coding:
+- Normalize data
+- try descrete inputs: one node per input
+- Classification problems: one node per hat
+- do not use  0/1 as target for mean squared error
+
+Softmax for multiclass classification:
+- P(y = k|x) = exp(a_k) / \sum^K_{i=1} exp a_i
+
+
