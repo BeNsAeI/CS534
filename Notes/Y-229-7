@@ -1,0 +1,13 @@
+Learning Rate \alpha
+Gradient Decent Update rule:
+- \theta_j := \theta_j - \alpha \frac{\partial}{\partial\theta_j}J(\theta)
+* for every 100 iterations evaluate the \theta at that point
+- by the time we get to few hundred the cost function decreases a lot slower
+- We can usually only tell the convergence rate by plotting
+
+* Automatic convergence test
+- Declare Convergence if J(\theta) decreases by lless that 10^{-3} in one iteration
+
+- If J(\Theta) is increasing, \alpha is too big, we are over shooting
+- Try learning rates in 10^{-5}, 10^{-4}, 10^{-3},.., 1, 10
+

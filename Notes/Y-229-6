@@ -1,0 +1,13 @@
+Feature Scaling
+- Make sure features are on a similar scale
+ - Otherwise the contours look very skinny and tall
+ - scale them and give them a value from 0 to 1
+- Get every feature to -1 to 1 range
+ - close enough is good enough!
+ - you can scale down OR scale up to achieve this
+
+mean normalization:
+- shift the values based on mean
+ - This helps with putting the values from -1 to 1
+ - x - \mu / standard diviation
+

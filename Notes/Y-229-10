@@ -1,0 +1,32 @@
+Logistical Regression:
+- Used for classification problems
+- 0: negative class -> absence of
+- 1: Positive class -> presence of
+
+
+Why not regression hypothesis function?
+ - A simple approach is to try to have a regression hypothesis:
+  - h_{\theta}(x) = \theta^Tx
+ - If h_{\theta}(x) \geq 0.5, predict y = 1
+ - If h_{\theta}(x) < 0.5, predict y = 0
+ * This causes an issue for outliers
+ - This is a bad idea
+
+Alternative:
+- we want 0 \leq h_{\theta}(x) \leq 1
+- Let h_{\theta}(x) = g(\theta^Tx)
+- g(z) = \frac(1)(1+e^{-z})
+ - This is a sigmoid or logistic function
+
+* -> h_{\theta}(x) = \frac(1)(1+e^{-\theta^Tx})
+
+Interpretation of the model:
+- h_{\theta}(x) = estimated probability that y=1 on input x
+ - if x = [x_0 x_1]^T = [1 feature_1]^T and h_{\theta}(x) = z
+  - We can say there iz z*100 percent chance of success
+
+- In other words h_{\theta}(x) = P(y=1|x;\theta)
+ - The chance of y being true given feature x parametrized by \theta
+ - y is either 0 or 1
+  - P(y=1|x;\theta) + P(y=0|x;\theta) = 1
+  - P(y=0|x;\theta) = 1 - P(y=1|x;\theta)

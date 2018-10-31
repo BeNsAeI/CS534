@@ -1,0 +1,44 @@
+Generalization:
+- lets expand the simple h_\theta(x)
+ - number of features is n
+ - number of examples is m
+ - vector x^(i) is ith training example
+  - This is not a power
+
+* h_\theta(x) = \theta_0 + \theta_1x_1 +\theta_2x_2 + ...\theta_4x_4
+
+- Now x becomes an n dimentional vector
+     _ _
+x = |x_0|
+    |x_1|
+    | . |
+    | . |
+    | . |
+    |x_n|
+    |_ _|
+- Note x_0 is always 1
+- Now \theta is also an n dimentional vector
+          _      _
+\theta = |\theta_0|
+         |\theta_1|
+         |    .   |
+         |    .   |
+         |    .   |
+         |\theta_n|
+         |_      _|
+
+h_theta(x) = \theta^T x = \theta_0 + \theta_1x_1 +\theta_2x_2 + ...\theta_4x_4
+
+* This is called multivariate regression
+
+- Now our J(\theta_0, \theta_1, ..., \theta_n) or J(\theta) for simplicity is
+  our new cost function
+
+- J(\theta) = \frac{1}{2m}\sum_{i=1}^m (h(\that)^i - y^i)^2
+
+- Gradient decent:
+ - repeat:
+  - \theta_j := \theta_j - \alpha \frac{partial}{partial \theta_j} J(\theta)
+   * \theta_j := \frac{1}{m} \sum_{i=1}^m (h_{\theta}(x^{(i)}) - y^{(i)})x^{(i)}_j
+
+

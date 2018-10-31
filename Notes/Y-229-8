@@ -1,0 +1,16 @@
+Choice of features matter:
+- Maybe we can combine certain features into one
+- Maybe we can break a certain feature into several
+- See what kind of model makes sense:
+ - Quadratic won't make sense for pricing since it goes back down
+ - See if the model makes sense with the problem at hand
+ - Pick features accordingly
+ - We don't have to neccessarily introduce new features, just set feature x_2 = x_1^2
+  - be careful about scaling problem which was covered earlier
+
+- \theta = (X^TX)^{-1}X^Ty
+- if X^TX is not invertable
+ 1- Redundant features
+  - Get rid of them
+ 2- Too many features for the number of examples (M \leq N)
+  - Regularize the features

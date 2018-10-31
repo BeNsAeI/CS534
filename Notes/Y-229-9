@@ -1,0 +1,32 @@
+Normal Equation:
+- Solve for \theta instead of gradient
+- J(\theta) = a\theta^2 + b\theta + c
+ - take derivative
+ - set it to 0
+ - sove for \thata
+
+* we can do this for a vector as well
+- Take partial derivative
+- set all to 0
+- solve for theta's
+
+- Take all the feature table
+- Construct matrix X (AKA Design Matrix) with all the training examples
+- Construct vector y with all true labels
+- Compute \theta:
+ - \theta = (X^TX)^{-1}X^Ty
+
+* we don't need to feature scale using this method
+
+Gradient decent disadvantages:
+- Needs \alpha
+ - Normal equation does not need \alpha
+- Needs many iterations
+ - Noormal do not iterate
+
+Disadvantages of Normal:
+- Compute the matrix and it is very computationally heavy
+ - Gradient doesn't care, scales well
+- very slow for large ns
+
+* 10,000 is when we use gradient decent

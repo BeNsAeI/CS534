@@ -23,4 +23,11 @@ Algorithm:
  - all \theta's need to update simultaniously or it won't work
  - \frac{\partial}{\partial\theta_j} is the partial derivative term
  - This can get stuck on local minima
- - 
+
+Gradient deent for Linear regression
+- Batch gradient decent:
+ - We look at sums: each step uses all the training examples
+
+- extentions: for 2 features we can compute the minima exactly instead of an 
+  iterative method
+
