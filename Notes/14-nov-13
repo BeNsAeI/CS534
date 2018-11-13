@@ -1,0 +1,51 @@
+Boosting:
+- Iterative
+- Force different classifier to focus on different input space and make different mistakes
+- each iteration forcus more on errors from previous classifiers and less on correct ones
+- Each classifier is ... Look at the notes
+
+___
+
+Specify input Distribution:
+- elarn many times on different destributions
+
+Input:
+ S - set of N labelled training instances
+ D - distribution over S where D(i) is the weight of the i'th training instance
+
+AdaBoost Algorithm:
+# assuming binary classification
+# each iteration we build one classifier
+- H = <{h_1, ..., h_L}, weightedVote(\alpha_1 , ..., \alpha_L)> L is size of the ensemble we wish to know (hyper parameter)
+
+- Initialize D_1(i) = 1/N, for all i from 1 to N (uniform destribution)
+- For l = 1, 2, ..., L Do:
+ - h_l = Learn(S,D_l)						# Apply base learning to S with D-L distribution
+ - \epsilon_l = error(h_l, S, D_l)				# weighted error
+
+ - \alpha_l = frac{1}{2}ln(\frac{1 - \epsilon_l}{\epsilon_l})	# if \epsilon_l < 0.5 implies \alpha_l > 0
+
+ - D_{l + 1} (i) = D_l(i) \times {e^{\alpha_l}, h_l(x_i) \not= y_i OR e^{-\alpha_l}, h_l(x_i) = y_i for all i \in {1..N}
+
+ - Normalize D_{l+1}						# can show that h_l has 0.5 error on D_{l+1}
+
+
+H_{Final} = sign(\alpha_1 \times h_1 + \alpha_2 \times h_2 + ... + \alpha_n \times h_n )
+- D is baked into the h_l (D is destribution)
+
+LEarning with weighted data:
+- Some examples are more important
+- We can use weights as follow:
+ - Weight the contribution of the model
+ - treat i'th example as D(i) example (fraction of destribution)
+ - sum the weight of examples instead of number and destribution of the example
+  - This weight is the new pretend destribution of the answers
+  - This is a generative approach
+
+Properties and behaviors of AdaBoost:
+- error decreases Exponentially fast
+- Boosting does not overfit as much as other learning methods
+- Testing error still decreases after training error goes to 0
+ * We are dampenning the effect of over fitting ones at a cost of being a bit lett accurate at training time
+
+- We try to fix \alpha and optimize h_l

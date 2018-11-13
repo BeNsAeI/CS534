@@ -1,0 +1,32 @@
+Decision boundry
+- if h_\theta(x) \geq 0.5 \rightarrow predict y = 1
+- Otherwise, predict y = 0
+
+- This means we predict y=1 when z os \geq 0 and y=0 when z < 0
+- in other words:
+ * if \theta^Tx \geq 0 predict y = 1, and otherwise predict y = 0
+
+- Decision boundry is a line (property of hypothesis) that seperates our classes
+
+* shop around for functions and see what kind of shape you are trying to fit!
+
+Cost function:
+- given J(\theta), let's call the sum of square errors to be just cost
+- we don't want to use th sigmoid the way we did in linear regression
+- it is non convex!
+
+- we want our sigmoid cost function to be convex
+
+* use -log(h_{\theta}(x) if y = 1
+* use -log(1 - h_{\theta}(x) if y = 0
+
+- here the cost is 0 if y = \hat{y} 
+- if y = 1 and \hat{y} = 0, cost = \infty
+- if y = 0 and \hat{y} = 1, cost = \infty
+
+
+Simplified cost function:
+- Cost(h_{\theta}(x),y) = -ylog(h_{\theta}(x)) - (1-y)log(1-h_{\theta}(x))
+- try this with y = 0, and y = 1, you get the piecewise function above!
+
+

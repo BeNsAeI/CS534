@@ -1,0 +1,79 @@
+Decision Tree:
+
+- Tree structured decision prcocess
+- Each internal node test on an attribute
+- each branch from  a node takes a particular values of x_i
+- each leaf node predicts a class label
+
+Properties:
+- Similar to human decision process, easy to understand
+- Handles both descrete and continueus, no normalization needed
+- Flexible: by increasing the depth of the tree we can solve more complex problems
+
+* think of it as each split in tree, cuts the optimiation decision boundry by half
+* Margins and SVM still applies, but it is decided on tree split rather than decision boundry
+
+How to learn a decision tree:
+- Problem: we can achieve a tree that has 0 training error, but it is over fitting!
+- Problem: find the smallest tree that has 0 training error, but that is NP-Hard!
+
+- Choose best attribute to test on the root of the tree ( first attribute that splits the data the best)
+- Create the descendant node for each possible outcome of the test
+- Training examples in training set S
+- Recursivly apply the same technique 
+
+
+* we decide the attributes by splitting the data and seeing the probabilistic uncertainty
+
+How to chose the best test:
+- Measure the uncertainty
+Classified:
+ - H(y) = - \sum p(y = v) log_2 p(y = v_i)
+Continueus:
+ - H(y) look at slide, integral equation
+
+* Entropy is a concave function
+- Our ML objective is to minimize the entropy (uncertainty) instead of loss function
+- find each branch's uncertainty, now we need to combined
+ - use weighted averag now to combine the two entropies:
+ - P(x_1=T)H(y | x_1 = T) + P(x_1 = F)H(y | x_1 = F)
+ * could be generalized, look at the slides
+ * sum_u P(x=u)H(y | x = u) s.t u is all possible classes of x
+
+** This is called Conditional entropy
+
+Mutual information: 
+- I(x,y) = H(y) - H(y|x)
+- AKA: Information gain
+- We are trying to maximize mutual information
+- we want to reduce the uncertainty about our label y given the data x
+
+Measures of uncertainty:
+- error
+- Gini index
+- etc
+
+Gain: H_{original} - H_{new destribution}
+- We are trying to maximize Gain
+
+** Decision Trees have the benifit that the dimentionality of the problem increases only if it is needed in a particular branch
+
+Multi-Nomial features:
+- These features have a bias
+- Handle the bias with:
+ - Either scale
+  - arg max frac{H(y) - H(y|x)}{H(x)}
+ - Or
+  - test for one feature values versus all of the others- commonly used
+
+Dealing with Continuous:
+- Test against threshold
+- Find the best threshold:
+ - sort examples
+ - Move the threshold from smallest to largest value
+ - select \theta that gives best information gain
+ - Trick: only need to compute information gain when class label changes
+ * this might allow us to reuse a feature with a different threshold \theta
+
+** We no longer care if they are continuous or binary!
+** Scaling no longer matters! threshold is scaled too
