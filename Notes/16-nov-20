@@ -1,0 +1,7 @@
+Percision: P = TP / (TP + FP)
+Recall R = TP / (TP + FN)
+F-Measure: harmonic mean F = 2PR/(P+R)
+
+Issues with accuracy:
+- Accuracy has flaws look at slide 31/32
+- 
