@@ -1,0 +1,5 @@
+Multi class vs Binary classification and Model selection
+- k-fold cross validation: n*x+1
+- too expensive for learning
+- rarely using it
+
