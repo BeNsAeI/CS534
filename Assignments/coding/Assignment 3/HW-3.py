@@ -4,12 +4,18 @@ import numpy as np
 from collections import namedtuple
 
 path = "Sources/"
-train = "pa3_train_reduced"
-valid = "pa3_valid_reduced"
+training = "pa3_train_reduced"
+validation = "pa3_valid_reduced"
 format = ".csv"
 DEBUG = False
 VERBOSE = False
-# A c = Falseonvinient Tree structure
+PLOT = False
+# Data structure
+## myData = Data(55, 20)
+## Or
+## myData = Data(Left=55, Right=20)
+Data = namedtuple("Data", "Left Right")
+# A convinient Tree structure
 # Example Declearation:
 ## myTree = Tree(0.5, 0x---, 0x---, 0x---)
 ## Or
@@ -31,6 +37,14 @@ def d_print(value):
 	if VERBOSE:
 		print(value)
 
+def count():
+
+def benefit():
+
+def train(root, x, y, plot):
+	d_print("\n___\nTraining...")
+	
+
 def main():
 	#Parsing arguments:
 	parser = argparse.ArgumentParser()
@@ -40,16 +54,23 @@ def main():
 	args = parser.parse_args()
 	global DEBUG
 	global VERBOSE
+	global PLOT
 	DEBUG = args.debug
 	VERBOSE = args.debug or args.verbose
+	PLOT = args.plot
+	d_print(args)
 	# Getting the data:
 	d_print("Reading in Data...")
-	x_train, y_train = get_data(path+train+format, test=False)
+	x_train, y_train = get_data(path+training+format, test=False)
 	d_print("Producing root data")
 	root_data = None
 	d_print("Initiating the Tree")
 	root = Tree(Data=root_data, Parent=None, Left=None, Right=None)
 	d_print("Root: "+str(root))
+	train(root, x_train, y_train, PLOT)
+	#cleaning up
+	d_print("\n___\nCleaning up ...")
+	d_print("Done.")
 
 if __name__ == "__main__":
 	main()
