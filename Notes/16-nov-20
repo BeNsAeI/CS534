@@ -1,7 +1,118 @@
-Percision: P = TP / (TP + FP)
+Prcision: P = TP / (TP + FP)
 Recall R = TP / (TP + FN)
 F-Measure: harmonic mean F = 2PR/(P+R)
 
 Issues with accuracy:
 - Accuracy has flaws look at slide 31/32
-- 
+ - ROC Curve
+  - Assume the binary classifier outputs some function f(x)
+  - This function has a destribution
+  - Apply Threshold: y = I(f(x) > \theta)
+  - As we adjust \theta TP/FP change
+  - TPR = TP/(TP + FN) <- denuminator is just P, it is similar to recall
+  - FPR = FP/(TN + FP)
+- ROC measures how the learned score f(x) separates positive from negative
+ - There are 4 possible ROC curves:
+ - This helps us estimate misfires and know how many to expect and how to handle
+ - This helps us to know the true effectivness of our classifier
+
+- Area under ROC:
+ - Helps us figure out which curve (classifier) can predict. Larger earea is better
+
+* It is difficult to predict effectivness of a classifier by just a single number
+ - specially when the values are close
+
+- Cross validation:
+ - k-fold
+ - Confidence Interval
+  - \sigma (standard deviation)
+  - ...
+
+Baseline Classifiers:
+- Majority class
+- Random Bseline
+
+* Do proper Evaluation
+ - ROC AUC
+ - Performance claims
+ - how to compare two algorithms
+ - what to compare to
+___
+
+Unsupervised learning:
+- Clustering
+- Find low dimentional reductions
+
+CLustering:
+- Group the data into smaller sub groups
+- What makes objects similar to eachother
+- How many clusters are needed
+- Avoid trivial clusters
+ - too large
+ - too small
+- Algorithm
+ - flat/hierarchtical
+ - soft and hard
+
+What is a similarity:
+- we convert this to distance between vectors
+
+Distance:
+- Symetric
+ - A should be the same distance from B as B from A
+- Positivity (self similarity)
+ - Distance between A and B is 0 if the are the same
+- Must satisfy triangle inequality
+
+Distance measures: Minkowski Metric
+- Euclidean: sqrt(x^2 + y^2)
+- Manhattan: |x - y|
+- Sup: max |x - y|
+- Hamming distance: binary Manhattan
+- Mahalanobis distance: sqrt((x-y)^T\sum^{-1}(x-y))
+ - assumes an underlaying destribution
+ - joins a gaulsian around the destribution (we can have complex cluster shapes)
+
+Similarities:
+- Cosine similarity:  <x.x>/(|x|.|x'|)
+- Kernels: -|X = X'|^2 / (2\sigma^2)
+
+Algorithms:
+- Hierarchical
+ - Bottom Up- Agglomerative
+ - Top Down - Divisive
+- Flat
+ - K-means
+ - Micture of Gaussian
+ - Spectral Clustering (Not covered)
+
+Flat Clustering:
+- Data set D with n data points
+ - K: number of clusters
+
+* min_{\mu,C} \sum^k_{i=1} \sum_(x\inC_i) |x - \mu_i|^2
+- C = {C_1,...,C_k} is a partition of D such that C_i and C_j are independant for all i and j and C_i and C_j \in D
+- \mu_i is representetive of C_i
+- A combinatorial Optimization problem
+ - Discrete solution space
+ - Exhustive search for an optimal solution is not feasable
+
+Iterative solution:
+- Initialization: Start with a random partition of the data
+- Iterative step: The cluster assignment and cluster center are updated to improve
+- Repeat until converge
+
+Algorithm:
+Input: Desired number of clusters K:
+Initialize: the k clusters centers (randomly if necessary)
+Iterate:
+- Assigning each of the N data points to its nearest cluster center
+- Re-estimate the cluster by assuming that the cirrent assignment is correct
+
+\mu = frac{1}{|C_i|} \sum_{x\inC_i} x
+
+- Iteration continues until there is no more changes in the clusterset C's subsets
+
+
+Does it Converge always?
+- Yes!
