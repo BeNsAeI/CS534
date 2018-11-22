@@ -10,17 +10,31 @@ format = ".csv"
 DEBUG = False
 VERBOSE = False
 PLOT = False
+
+# State
+## myState = State(X, Y)
+## Or
+## myState = State(X=X, Y=Y)
+State = namedtuple("State", "X Y")
+
 # Data structure
 ## myData = Data(55, 20)
 ## Or
 ## myData = Data(Left=55, Right=20)
 Data = namedtuple("Data", "Left Right")
+
+# i Branch condition is x_6 < 3:
+## myCondition = Data(6, '<', 3)
+##Or
+## myCondition = Data(Feature=6, Type='<', Threshold=3)
+Condition = namedtuple("Condition", "Feature Type Threshold")
+
 # A convinient Tree structure
 # Example Declearation:
-## myTree = Tree(0.5, 0x---, 0x---, 0x---)
+## myTree = Tree(myData, myState, myCondition, 0x---, 0x---, 0x---)
 ## Or
-## myTree = Tree(Data=0.5, Parent=0x---, Left=0x---, Right=0x---)
-Tree = namedtuple("Tree", "Data Parent Left Right")
+## myTree = Tree(Data=myData, State=myState, Condition=myCondition, Parent=0x---, Left=0x---, Right=0x---)
+Tree = namedtuple("Tree", "Data State Condition Parent Left Right")
 
 def get_data(filename, test=False):
 	x = np.genfromtxt(filename, delimiter=',', dtype=float)
@@ -37,13 +51,62 @@ def d_print(value):
 	if VERBOSE:
 		print(value)
 
-def count():
+# Count
+def C(Y):
+	# Format only use the column indicated by condition.Feature
+	out = None
+	left = 0
+	right = 0
+	for i in Y:
+		if i in Y:
+			if i < 0:
+				left +=1
+			else:
+				right += 1
+	out = Data(Left=left, Right=right)
+	return out
 
-def benefit():
+def split(state, condition):
+	new_state_left = None
+	new_state_right = None
+#	feature = X[:, condition.Feature]
+#	new_X = None
+#	new_Y = None
+#	if condition.Type == '<':
+#		for i in range(0,feature.size()):
+#			if feature[i] < condition.Threshold:
+#				new_X = np.insert(new_X, 0, X[i,:], axis=0)
+#				new_Y = np.insert(new_Y, 0, Y[i])
+#	if condition.Type == '>':
+#		for i in range(0,feature.size()):
+#			if feature[i] > condition.Threshold:
+#				new_X = np.insert(new_X, 0, X[i,:], axis=0)
+#				new_Y = np.insert(new_Y, 0, Y[i])
+#	if condition.Type == '==':
+#		for i in range(0,feature.size()):
+#			if feature[i] == condition.Threshold:
+#				new_X = np.insert(new_X, 0, X[i,:], axis=0)
+#				new_Y = np.insert(new_Y, 0, Y[i])
+#	X, Y, out = C(new_X, new_Y)
+	return new_state_left, new_state_right
 
-def train(root, x, y, plot):
+# Benefit:
+def B(left_state, right_state, condition):
+	B = None
+	XL = None
+	XR = None
+	YL = None
+	YR = None
+	return B
+
+def train(root, plot):
 	d_print("\n___\nTraining...")
-	
+	# come up with condition
+	# compute Benefit for that condition
+	# find the best benefit
+	# construct a pair of childs for left and right
+	# add that to the root
+	# call train on each one of the two children
 
 def main():
 	#Parsing arguments:
@@ -63,9 +126,11 @@ def main():
 	d_print("Reading in Data...")
 	x_train, y_train = get_data(path+training+format, test=False)
 	d_print("Producing root data")
-	root_data = None
+	root_data = C(y_train)
+	d_print("Generating State")
+	root_state = State(X=x_train, Y=y_train)
 	d_print("Initiating the Tree")
-	root = Tree(Data=root_data, Parent=None, Left=None, Right=None)
+	root = Tree(Data=root_data, State=root_state, Condition=None, Parent=None, Left=None, Right=None)
 	d_print("Root: "+str(root))
 	train(root, x_train, y_train, PLOT)
 	#cleaning up
