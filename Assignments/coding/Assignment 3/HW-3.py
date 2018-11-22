@@ -1,7 +1,11 @@
 import os
 import argparse
 import numpy as np
+import multiprocessing as mp
 from collections import namedtuple
+
+output = mp.Queue()
+processes = []
 
 path = "Sources/"
 training = "pa3_train_reduced"
@@ -20,13 +24,13 @@ State = namedtuple("State", "X Y")
 # Data structure
 ## myData = Data(55, 20)
 ## Or
-## myData = Data(Left=55, Right=20)
-Data = namedtuple("Data", "Left Right")
+## myData = Data(Positive=55, Negative=20)
+Data = namedtuple("Data", "Positive Negative")
 
 # i Branch condition is x_6 < 3:
-## myCondition = Data(6, '<', 3)
+## myCondition = Condition(6, '<', 3)
 ##Or
-## myCondition = Data(Feature=6, Type='<', Threshold=3)
+## myCondition = Condition(Feature=6, Type='<', Threshold=3)
 Condition = namedtuple("Condition", "Feature Type Threshold")
 
 # A convinient Node structure
@@ -39,7 +43,6 @@ Node = namedtuple("Node", "Data State Condition Parent Left Right")
 def get_data(filename, test=False):
 	x = np.genfromtxt(filename, delimiter=',', dtype=float)
 	y = None
-	x = np.insert(x , [1], 1, axis=1)
 	if not test:
 		y = x[:, 0]
 		y[y == 5] = -1
@@ -52,48 +55,67 @@ def d_print(value):
 		print(value)
 
 # Count
-def C(Y):
+def C(Y, ret_out=None):
 	# Format only use the column indicated by condition.Feature
 	out = None
-	left = 0
-	right = 0
-	for i in Y:
-		if i in Y:
-			if i < 0:
-				left +=1
-			else:
-				right += 1
-	out = Data(Left=left, Right=right)
+	sum = Y.sum()
+	pos = (Y.shape[0] - sum)/2 #0
+	neg = (Y.shape[0] - sum)/2 #0
+	if sum > 0:
+		pos += sum
+	else:
+		neg += sum
+	out = Data(Positive=pos, Negative=neg)
+	if ret_out != None:
+		ret_out.put(out)
 	return out
+
+def get_state(state, condition):
+	left_X = np.zeros(100)
+	left_Y = np.zeros(100)
+	right_X = np.zeros(100)
+	right_Y = np.zeros(100)
+
+	feature = state.X[:, condition.Feature]
+	if condition.Type == '<':
+		for i in range(0,feature.shape[0]):
+			if feature[i] < condition.Threshold:
+				left_X = np.insert(left_X, 1, state.X[i,:], axis=0)
+				left_Y = np.insert(left_Y, 1, state.Y[i])
+			else:
+				right_X = np.insert(right_X, 1, state.X[i,:], axis=0)
+				right_Y = np.insert(right_Y, 1, state.Y[i])
+	else:
+		for i in range(0,feature.shape[0]):
+			if feature[i] > condition.Threshold:
+				left_X = np.insert(left_X, 1, state.X[i,:], axis=0)
+				left_Y = np.insert(left_Y, 1, state.Y[i])
+			else:
+				right_X = np.insert(right_X, 1, state.X[i,:], axis=0)
+				right_Y = np.insert(right_Y, 1, state.Y[i])
+	left_X = np.delete(left_X, [0], 0)
+	left_Y = np.delete(left_Y, [0], 0)
+	right_X = np.delete(right_X, [0], 0)
+	right_Y = np.delete(right_Y, [0], 0)
+	left_state = State(X=left_X, Y=left_Y)
+	right_state = State(X=right_X, Y=right_Y)
+	return left_state, right_state
 
 def split(node, condition):
 	left_state = None
-	left_data = None
+	right_state = None
+	left_state, right_state = get_state(node.State, condition)
+
+	left_data = C(left_state.Y)
 	left_condition = condition
 
 	right_state = None
-	right_data = None
-	right_condition = None # Calculate right condition
-
-#	feature = X[:, condition.Feature]
-#	new_X = None
-#	new_Y = None
-#	if condition.Type == '<':
-#		for i in range(0,feature.size()):
-#			if feature[i] < condition.Threshold:
-#				new_X = np.insert(new_X, 0, X[i,:], axis=0)
-#				new_Y = np.insert(new_Y, 0, Y[i])
-#	if condition.Type == '>':
-#		for i in range(0,feature.size()):
-#			if feature[i] > condition.Threshold:
-#				new_X = np.insert(new_X, 0, X[i,:], axis=0)
-#				new_Y = np.insert(new_Y, 0, Y[i])
-#	if condition.Type == '==':
-#		for i in range(0,feature.size()):
-#			if feature[i] == condition.Threshold:
-#				new_X = np.insert(new_X, 0, X[i,:], axis=0)
-#				new_Y = np.insert(new_Y, 0, Y[i])
-#	X, Y, out = C(new_X, new_Y)
+	right_data = C(right_state.Y)
+	right_condition = None
+	if condition.Type == '>':
+		right_condition = Condition(Feature=condition.Feature, Type='<', Threshold=condition.Threshold)
+	else:
+		right_condition = Condition(Feature=condition.Feature, Type='>', Threshold=condition.Threshold)
 
 	left_node = Node(Data=left_data,
 		State=left_state,
@@ -117,17 +139,72 @@ def split(node, condition):
 		Right=right_node)
 	return new_node
 
+# Probability
+def P(big_pos_c, big_neg_c, small_pos_c, small_neg_c):
+	return ((small_pos_c + small_neg_c)/(big_pos_c + big_neg_c))
+
+# Gini-index
+def U(small_pos_c, small_neg_c):
+	p_pos = small_pos_c / (small_pos_c + small_neg_c)
+	p_neg = small_neg_c / (small_pos_c + small_neg_c)
+	return 1 - (p_pos * p_pos) - (p_neg * p_neg)
+
 # Benefit:
-def B(left_state, right_state, condition):
+def B(main_state, left_state, right_state, condition):
+	d_print("Computing benefit: " + str(condition))
 	B = None
-	XL = None
-	XR = None
-	YL = None
-	YR = None
-	return B
+
+	global processes
+	global output
+	processes.append(mp.Process(target=C, args=(main_state.Y,output)))
+	processes.append(mp.Process(target=C, args=(left_state.Y,output)))
+	processes.append(mp.Process(target=C, args=(right_state.Y,output)))
+	for p in processes:
+		p.start()
+	for p in processes:
+		p.join()
+	results = [output.get() for p in processes]
+	processes = []
+
+	big_data = results[0] #C(main_state.Y)
+	big_pos_c = big_data.Positive
+	big_neg_c = big_data.Negative
+
+	small_left_data = results[1] #C(left_state.Y)
+	small_left_pos_c = small_left_data.Positive
+	small_left_neg_c = small_left_data.Negative
+
+	small_right_data = results[2] #C(right_state.Y)
+	small_right_pos_c = small_right_data.Positive
+	small_right_neg_c = small_right_data.Negative
+
+	U_A = U(big_pos_c, big_neg_c)
+	U_AL = U(small_left_pos_c, small_left_neg_c)
+	U_AR = U(small_right_pos_c, small_right_neg_c)
+	p_l = P(big_pos_c, big_neg_c, small_left_pos_c, small_left_neg_c)
+	p_r = P(big_pos_c, big_neg_c, small_right_pos_c, small_right_neg_c)
+	return U_A - p_l * U_AL - p_r * U_AR
 
 def train(root, type, depth_cap=20, plot=False):
 	d_print("\n___\nTraining "+ type+". Max depth: "+ str(depth_cap))
+	d_print(root.State.X.shape[1])
+	if type == "Decision Tree" and depth_cap > 0:
+		best_benefit = 0
+		best_condition = None
+		for i in range(1,root.State.X.shape[1]):
+			for j in range(-14/4,16/4):
+				condition = Condition(Feature=i, Type='<', Threshold=j*500)
+				left_state, right_state = get_state(root.State, condition)
+				index_benefit = B(root.State, left_state, right_state, condition)
+				if (best_benefit < index_benefit):
+					best_benefit = index_benefit
+					best_condition = condition
+					if index_benefit == 1:
+						break
+		root = split(root, best_condition)
+		train(root.Left, "Decision Tree", depth_cap - 1, plot=plot)
+		train(root.Right, "Decision Tree", depth_cap - 1, plot=plot)
+				
 	# come up with condition
 	# compute Benefit for that condition
 	# find the best benefit
