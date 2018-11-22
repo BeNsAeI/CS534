@@ -29,12 +29,12 @@ Data = namedtuple("Data", "Left Right")
 ## myCondition = Data(Feature=6, Type='<', Threshold=3)
 Condition = namedtuple("Condition", "Feature Type Threshold")
 
-# A convinient Tree structure
+# A convinient Node structure
 # Example Declearation:
-## myTree = Tree(myData, myState, myCondition, 0x---, 0x---, 0x---)
+## myNode = Node(myData, myState, myCondition, 0x---, 0x---, 0x---)
 ## Or
-## myTree = Tree(Data=myData, State=myState, Condition=myCondition, Parent=0x---, Left=0x---, Right=0x---)
-Tree = namedtuple("Tree", "Data State Condition Parent Left Right")
+## myNode = Node(Data=myData, State=myState, Condition=myCondition, Parent=0x---, Left=0x---, Right=0x---)
+Node = namedtuple("Node", "Data State Condition Parent Left Right")
 
 def get_data(filename, test=False):
 	x = np.genfromtxt(filename, delimiter=',', dtype=float)
@@ -66,9 +66,15 @@ def C(Y):
 	out = Data(Left=left, Right=right)
 	return out
 
-def split(state, condition):
-	new_state_left = None
-	new_state_right = None
+def split(node, condition):
+	left_state = None
+	left_data = None
+	left_condition = condition
+
+	right_state = None
+	right_data = None
+	right_condition = None # Calculate right condition
+
 #	feature = X[:, condition.Feature]
 #	new_X = None
 #	new_Y = None
@@ -88,7 +94,28 @@ def split(state, condition):
 #				new_X = np.insert(new_X, 0, X[i,:], axis=0)
 #				new_Y = np.insert(new_Y, 0, Y[i])
 #	X, Y, out = C(new_X, new_Y)
-	return new_state_left, new_state_right
+
+	left_node = Node(Data=left_data,
+		State=left_state,
+		Condition=left_condition,
+		Parent=node,
+		Left=None,
+		Right=None)
+
+	right_state= Node(Data=right_data,
+		State=right_state,
+		Condition=right_condition,
+		Parent=node,
+		Left=None,
+		Right=None)
+
+	new_node = Node(Data=node.Data,
+		State=node.State,
+		Condition=node.Condition,
+		Parent=node.Parent,
+		Left=left_node,
+		Right=right_node)
+	return new_node
 
 # Benefit:
 def B(left_state, right_state, condition):
@@ -129,8 +156,8 @@ def main():
 	root_data = C(y_train)
 	d_print("Generating State")
 	root_state = State(X=x_train, Y=y_train)
-	d_print("Initiating the Tree")
-	root = Tree(Data=root_data, State=root_state, Condition=None, Parent=None, Left=None, Right=None)
+	d_print("Initiating the Node")
+	root = Node(Data=root_data, State=root_state, Condition=None, Parent=None, Left=None, Right=None)
 	d_print("Root: "+str(root))
 	# Part 1: Train a Tree
 	train(root, "Decision Tree", plot=PLOT)
