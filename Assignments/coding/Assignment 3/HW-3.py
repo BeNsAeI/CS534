@@ -99,8 +99,8 @@ def B(left_state, right_state, condition):
 	YR = None
 	return B
 
-def train(root, plot):
-	d_print("\n___\nTraining...")
+def train(root, type, plot):
+	d_print("\n___\nTraining "+ type)
 	# come up with condition
 	# compute Benefit for that condition
 	# find the best benefit
@@ -132,7 +132,12 @@ def main():
 	d_print("Initiating the Tree")
 	root = Tree(Data=root_data, State=root_state, Condition=None, Parent=None, Left=None, Right=None)
 	d_print("Root: "+str(root))
-	train(root, x_train, y_train, PLOT)
+	# Part 1: Train a Tree
+	train(root, "Decision Tree", PLOT)
+	# Part 2: Random Forest
+	train(root, "Random Forest", PLOT)
+	# Part 3: AdaBoost
+	train(root, "Adaboost", PLOT)
 	#cleaning up
 	d_print("\n___\nCleaning up ...")
 	d_print("Done.")
