@@ -1,11 +1,11 @@
 import os
+import pickle
 import argparse
 import numpy as np
 import multiprocessing as mp
+from subprocess import call
 from collections import namedtuple
 
-output = mp.Queue()
-processes = []
 
 path = "Sources/"
 training = "pa3_train_reduced"
@@ -14,7 +14,7 @@ format = ".csv"
 DEBUG = False
 VERBOSE = False
 PLOT = False
-
+MULTIPROC = False
 # State
 ## myState = State(X, Y)
 ## Or
@@ -204,7 +204,7 @@ def B(main_state, left_state, right_state):
 def print_tree(root, count=0):
 	tab = ""
 	for i in range(0,count):
-		tab += "\t"
+		tab += "."
 	if(root.Condition != None):
 		print(str(tab)+
 			"Node depth: "+
@@ -234,12 +234,12 @@ def print_tree(root, count=0):
 	if root.Right != None:
 		print_tree(root.Right,count+1)
 
-def train(root, type, feature_list, depth_cap=20, plot=False):
+def train(root, type, feature_list, depth_cap=20, par_id=None, marker=None, plot=False, proc=False):
 	d_print("\n___\nTraining "+ type+". Max depth: "+ str(depth_cap))
 	d_print(root.State.X.shape[0])
 	if root.State.X.shape[0] == 0:
 		d_print("Branch terminated.")
-		return
+		return root
 	d_print(root.State.X.shape[1] - len(feature_list))
 	if type == "Decision Tree" and depth_cap > 0:
 		best_benefit = 0.0
@@ -253,43 +253,79 @@ def train(root, type, feature_list, depth_cap=20, plot=False):
 					condition = Condition(Feature=i, Type='<', Threshold=j*500)
 					left_state, right_state = get_state(root.State, condition)
 					if left_state.Y.shape[0] == 0 or right_state.Y.shape[0] == 0:
-						#d_print("skipping "+str(condition))
 						continue
 					else:
 						index_benefit = B(root.State, left_state, right_state)
-						#d_print(best_benefit)
-						#d_print(index_benefit)
 						if (best_benefit > index_benefit):
-							#d_print(best_benefit)
-							#d_print(index_benefit)
 							best_benefit = index_benefit
 							best_condition = condition
 		if best_condition != None:
 			feature_list.append(best_condition.Feature)
 			root = split(root, best_condition)
 			d_print("Node "+ str(20 - depth_cap) + " has " + str(best_condition))
-			train_processes = []
-			train_processes.append(mp.Process(target=train,
-				args=(root.Left,
-					"Decision Tree",
-					feature_list,
-					depth_cap - 1,
-					plot)))
-			train_processes.append(mp.Process(target=train,
-				args=(root.Right,
-					"Decision Tree",
-					feature_list,
-					depth_cap - 1,
-					plot)))
-			for p in train_processes:
-				p.start()
-			for p in train_processes:
-				p.join()
-			#train(root.Left, "Decision Tree", feature_list, depth_cap - 1, plot=plot)
-			#train(root.Right, "Decision Tree", feature_list, depth_cap - 1, plot=plot)
-		# print the tree:
+			if proc:
+				train_processes = []
+				from random import randint
+				new_id = str(os.getpid()) + '-' + str(randint(100000000000,999999999999))
+				train_processes.append(mp.Process(target=train,
+					args=(root.Left,
+						"Decision Tree",
+						feature_list,
+						depth_cap - 1,
+						new_id,
+						'l',
+						plot,
+						proc)))
+				train_processes.append(mp.Process(target=train,
+					args=(root.Right,
+						"Decision Tree",
+						feature_list,
+						depth_cap - 1,
+						new_id,
+						'r',
+						plot,
+						proc)))
+				for p in train_processes:
+					p.start()
+				for p in train_processes:
+					p.join()
+
+				left_node = None
+				right_node = None
+				if par_id == None and depth_cap != 20:
+					d_print("Error, parent ID was not passed.")
+					exit(1)
+				with open(new_id + 'l' + '.pkl', 'rb') as input:
+					left_node = pickle.load(input)
+				with open(new_id + 'r' + '.pkl', 'rb') as input:
+					right_node = pickle.load(input)
+				root = Node(Data=root.Data,
+					State=root.State,
+					Condition=root.Condition,
+					Parent=root.Parent,
+					Left=right_node,
+					Right=right_node)
+				call(["rm", new_id + 'l' + '.pkl'])
+				call(["rm", new_id + 'r' + '.pkl'])
+			else:
+				left_node = train(root.Left, "Decision Tree", feature_list, depth_cap - 1, plot=plot)
+				right_node = train(root.Right, "Decision Tree", feature_list, depth_cap - 1, plot=plot)
+				root = Node(Data=root.Data,
+					State=root.State,
+					Condition=root.Condition,
+					Parent=root.Parent,
+					Left=left_node,
+					Right=right_node)
+		if proc:
+			if marker != None and par_id != None:
+				with open(par_id + marker + '.pkl', 'wb') as output:
+					pickle.dump(root, output, pickle.HIGHEST_PROTOCOL)
 		if depth_cap == 20:
 			print_tree(root)
+		return root
+		# print the tree:
+		#if depth_cap == 20:
+		#	print_tree(root)
 	# come up with condition
 	# compute Benefit for that condition
 	# find the best benefit
@@ -301,15 +337,18 @@ def main():
 	#Parsing arguments:
 	parser = argparse.ArgumentParser()
 	parser.add_argument("-p", "--plot", action='store_true', help="if set, script will show plots")
+	parser.add_argument("-m", "--multi_process", action='store_true', help="if set, script will run in parallel")
 	parser.add_argument("-d", "--debug", action='store_true', help="if set, debug mode is activated")
 	parser.add_argument("-v", "--verbose", action='store_true', help="if set, verbose mode is activated")
 	args = parser.parse_args()
 	global DEBUG
 	global VERBOSE
 	global PLOT
+	global MULTIPROC
 	DEBUG = args.debug
 	VERBOSE = args.debug or args.verbose
 	PLOT = args.plot
+	MULTIPROC = args.multi_process
 	d_print(args)
 	# Getting the data:
 	d_print("Reading in Data...")
@@ -323,11 +362,11 @@ def main():
 	d_print("Root: "+str(root))
 	feature_list = []
 	# Part 1: Train a Tree
-	train(root, "Decision Tree", feature_list, plot=PLOT)
+	train(root, "Decision Tree", feature_list, plot=PLOT, proc=MULTIPROC)
 	# Part 2: Random Forest
-	train(root, "Random Forest", feature_list, plot=PLOT)
+	#train(root, "Random Forest", feature_list, plot=PLOT, proc=MULTIPROC)
 	# Part 3: AdaBoost
-	train(root, "Adaboost", feature_list, plot=PLOT)
+	#train(root, "Adaboost", feature_list, plot=PLOT, proc=MULTIPROC)
 	#cleaning up
 	d_print("\n___\nCleaning up ...")
 	d_print("Done.")
