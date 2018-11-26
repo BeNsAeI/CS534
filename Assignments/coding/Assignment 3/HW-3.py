@@ -211,6 +211,10 @@ def print_tree(root, count=0):
 		print(str(tab)+
 			"Node depth: "+
 			str(count)+
+			", X:"+
+			str(root.State.X.shape)+
+			", Y:"+
+			str(root.State.Y.shape)+
 			", ["+
 			str(root.Data.Positive)+
 			","+
@@ -226,6 +230,10 @@ def print_tree(root, count=0):
 		print(str(tab)+
 			"Node depth: "+
 			str(count)+
+			", X:"+
+			str(root.State.X.shape)+
+			", Y:"+
+			str(root.State.Y.shape)+
 			", ["+
 			str(root.Data.Positive)+
 			","+
@@ -247,16 +255,14 @@ def train(root, type, feature_list, depth_cap=20, par_id=None, marker=None, plot
 		best_benefit = 0.0
 		best_condition = None
 		for i in range(0,root.State.X.shape[1]):
-			if i in feature_list:
-				#d_print("skipping feature "+ str(i))
-				continue
-			else:
-				for j in range(-14/threshol_grain,16/threshol_grain):
+			for j in range(-14/threshol_grain,16/threshol_grain):
+				if [i,j] in feature_list:
+					d_print("skipping feature ["+ str(i) + ", " + str(j) + "]")
+					continue
+				else:
 					condition = Condition(Feature=i, Type='<', Threshold=j*100*threshol_grain)
 					left_state, right_state = get_state(root.State, condition)
 					if left_state.Y.shape[0] == 0 or right_state.Y.shape[0] == 0:
-						#d_print(left_state.Y.shape[0])
-						#d_print(right_state.Y.shape[0])
 						continue
 					else:
 						index_benefit = B(root.State, left_state, right_state)
@@ -264,77 +270,23 @@ def train(root, type, feature_list, depth_cap=20, par_id=None, marker=None, plot
 							best_benefit = index_benefit
 							best_condition = condition
 		if best_condition != None:
-			feature_list.append(best_condition.Feature)
+			feature_list.append([best_condition.Feature,best_condition.Threshold])
 			root = split(root, best_condition)
 			d_print("Node "+ str(20 - depth_cap) + " has " + str(best_condition))
-			if proc:
-				train_processes = []
-				from random import randint
-				new_id = str(os.getpid()) + '-' + str(randint(100000000000,999999999999))
-				train_processes.append(mp.Process(target=train,
-					args=(root.Left,
-						"Decision Tree",
-						feature_list,
-						depth_cap - 1,
-						new_id,
-						'l',
-						plot,
-						proc)))
-				train_processes.append(mp.Process(target=train,
-					args=(root.Right,
-						"Decision Tree",
-						feature_list,
-						depth_cap - 1,
-						new_id,
-						'r',
-						plot,
-						proc)))
-				for p in train_processes:
-					p.start()
-				for p in train_processes:
-					p.join()
-
-				left_node = None
-				right_node = None
-				if par_id == None and depth_cap != 20:
-					d_print("Error, parent ID was not passed.")
-					exit(1)
-				with open(new_id + 'l' + '.pkl', 'rb') as input:
-					left_node = pickle.load(input)
-				with open(new_id + 'r' + '.pkl', 'rb') as input:
-					right_node = pickle.load(input)
-				root = Node(Data=root.Data,
-					State=root.State,
-					Condition=root.Condition,
-					Parent=root.Parent,
-					Left=right_node,
-					Right=right_node)
-				call(["rm", new_id + 'l' + '.pkl'])
-				call(["rm", new_id + 'r' + '.pkl'])
-			else:
-				left_node = train(root.Left, "Decision Tree", feature_list, depth_cap - 1, plot=plot)
-				right_node = train(root.Right, "Decision Tree", feature_list, depth_cap - 1, plot=plot)
-				root = Node(Data=root.Data,
-					State=root.State,
-					Condition=root.Condition,
-					Parent=root.Parent,
-					Left=left_node,
-					Right=right_node)
-		if proc:
-			if marker != None and par_id != None:
-				with open(par_id + marker + '.pkl', 'wb') as output:
-					pickle.dump(root, output, pickle.HIGHEST_PROTOCOL)
+			left_node = train(root.Left, "Decision Tree", feature_list, depth_cap=depth_cap - 1, plot=plot)
+			right_node = train(root.Right, "Decision Tree", feature_list, depth_cap=depth_cap - 1, plot=plot)
+			root = Node(Data=root.Data,
+				State=root.State,
+				Condition=root.Condition,
+				Parent=root.Parent,
+				Left=left_node,
+				Right=right_node)
 		#if depth_cap == 20:
 		#	print_tree(root)
 		return root
 		# print the tree:
 		#if depth_cap == 20:
 		#	print_tree(root)
-def plot_tree(root):
-	d_print("")
-	# make the decision tree
-	# plot the tree
-	# return tree
 
 def walk(node, row, true_label):
 	#d_print(str(true_label) + ": " + str(row[node.Left.Condition.Feature]))
@@ -374,8 +326,8 @@ def validate(x_validate, y_validate, root, plot=PLOT, proc=MULTIPROC):
 			correct_total += 1
 		#else:
 			#d_print("inCorrect: Predicted: " + str(prediction) + ", Expected: " + str(true_label))
-	d_print(correct_total)
-	d_print(y_validate.shape[0])
+	#d_print(correct_total)
+	#d_print(y_validate.shape[0])
 	return (float(correct_total) / float(y_validate.shape[0]))
 
 def main():
@@ -412,7 +364,6 @@ def main():
 	print_tree(root)
 	d_print("Reading in validation Data...")
 	# plot the tree:
-	plot_tree(root)
 	x_validate, y_validate = get_data(path+validation+format, test=False)
 	accuracy = validate(x_train, y_train, root, plot=PLOT, proc=MULTIPROC)
 	d_print("Training accuracy is: " + str(accuracy) + ".")
