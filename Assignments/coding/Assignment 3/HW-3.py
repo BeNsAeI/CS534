@@ -17,6 +17,7 @@ PLOT = False
 MULTIPROC = False
 threshol_grain = 4
 maximum_depth = 20
+
 # State
 ## myState = State(X, Y)
 ## Or
@@ -67,11 +68,6 @@ def C(Y, ret_out=None):
 		pos += abs(sum)
 	else:
 		neg += abs(sum)
-#	if(Y.shape[0] == 0):
-#		print Y
-#		d_print(sum)
-#		d_print(pos)
-#		d_print(neg)
 	out = Data(Positive=pos, Negative=neg)
 	if ret_out != None:
 		ret_out.put(out)
@@ -281,12 +277,7 @@ def train(root, type, feature_list, depth_cap=20, par_id=None, marker=None, plot
 				Parent=root.Parent,
 				Left=left_node,
 				Right=right_node)
-		#if depth_cap == 20:
-		#	print_tree(root)
 		return root
-		# print the tree:
-		#if depth_cap == 20:
-		#	print_tree(root)
 
 def walk(node, row, true_label):
 	#d_print(str(true_label) + ": " + str(row[node.Left.Condition.Feature]))
