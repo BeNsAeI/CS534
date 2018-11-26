@@ -242,18 +242,18 @@ def print_tree(root, count=0):
 
 def train(root, type, feature_list, depth_cap=20, par_id=None, marker=None, plot=False, proc=False):
 	d_print("\n___\nTraining "+ type+". Max depth: "+ str(depth_cap))
-	d_print(root.State.X.shape[0])
+	#d_print(root.State.X.shape[0])
 	if root.State.X.shape[0] == 0:
 		d_print("Branch terminated.")
 		return root
-	d_print(root.State.X.shape[1] - len(feature_list))
+	#d_print(root.State.X.shape[1] - len(feature_list))
 	if type == "Decision Tree" and depth_cap > 0:
 		best_benefit = 0.0
 		best_condition = None
 		for i in range(0,root.State.X.shape[1]):
 			for j in range(-14/threshol_grain,16/threshol_grain):
 				if [i,j] in feature_list:
-					d_print("skipping feature ["+ str(i) + ", " + str(j) + "]")
+					#d_print("skipping feature ["+ str(i) + ", " + str(j) + "]")
 					continue
 				else:
 					condition = Condition(Feature=i, Type='<', Threshold=j*100*threshol_grain)
@@ -313,12 +313,7 @@ def validate(x_validate, y_validate, root, plot=PLOT, proc=MULTIPROC):
 	for true_label, row in zip(y_validate,x_validate):
 		prediction = walk(root, row, true_label)
 		if np.sign(true_label) == np.sign(prediction):
-			#d_print("Correct: Predicted: " + str(prediction) + ", Expected: " + str(true_label))
 			correct_total += 1
-		#else:
-			#d_print("inCorrect: Predicted: " + str(prediction) + ", Expected: " + str(true_label))
-	#d_print(correct_total)
-	#d_print(y_validate.shape[0])
 	return (float(correct_total) / float(y_validate.shape[0]))
 
 def main():
