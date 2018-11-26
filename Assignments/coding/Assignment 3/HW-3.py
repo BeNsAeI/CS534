@@ -15,6 +15,8 @@ DEBUG = False
 VERBOSE = False
 PLOT = False
 MULTIPROC = False
+threshol_grain = 4
+maximum_depth = 20
 # State
 ## myState = State(X, Y)
 ## Or
@@ -249,10 +251,12 @@ def train(root, type, feature_list, depth_cap=20, par_id=None, marker=None, plot
 				#d_print("skipping feature "+ str(i))
 				continue
 			else:
-				for j in range(-14/4,16/4):
-					condition = Condition(Feature=i, Type='<', Threshold=j*500)
+				for j in range(-14/threshol_grain,16/threshol_grain):
+					condition = Condition(Feature=i, Type='<', Threshold=j*100*threshol_grain)
 					left_state, right_state = get_state(root.State, condition)
 					if left_state.Y.shape[0] == 0 or right_state.Y.shape[0] == 0:
+						#d_print(left_state.Y.shape[0])
+						#d_print(right_state.Y.shape[0])
 						continue
 					else:
 						index_benefit = B(root.State, left_state, right_state)
@@ -320,18 +324,59 @@ def train(root, type, feature_list, depth_cap=20, par_id=None, marker=None, plot
 			if marker != None and par_id != None:
 				with open(par_id + marker + '.pkl', 'wb') as output:
 					pickle.dump(root, output, pickle.HIGHEST_PROTOCOL)
-		if depth_cap == 20:
-			print_tree(root)
+		#if depth_cap == 20:
+		#	print_tree(root)
 		return root
 		# print the tree:
 		#if depth_cap == 20:
 		#	print_tree(root)
-	# come up with condition
-	# compute Benefit for that condition
-	# find the best benefit
-	# construct a pair of childs for left and right
-	# add that to the root
-	# call train on each one of the two children
+def plot_tree(root):
+	d_print("")
+	# make the decision tree
+	# plot the tree
+	# return tree
+
+def walk(node, row, true_label):
+	#d_print(str(true_label) + ": " + str(row[node.Left.Condition.Feature]))
+	# grab the feature
+	# check the condition
+	# select branch
+	# recurse
+	#d_print(node.Condition)
+	#d_print(node.Data)
+	if node.Left == None:
+		if node.Data.Positive > node.Data.Negative:
+			return +1
+		else:
+			return -1
+	else:
+		if node.Left.Condition.Type == '<':
+			if row[node.Left.Condition.Feature] < node.Left.Condition.Threshold:
+				return walk(node.Left, row, true_label)
+			else:
+				return walk(node.Right, row, true_label)
+		else:
+			if row[node.Left.Condition.Feature] > node.Left.Condition.Threshold:
+				return walk(node.Right, row, true_label)
+			else:
+				return walk(node.Left, row, true_label)
+	d_print("None of the conditions in walk were satisfied.")
+	exit(1)
+
+def validate(x_validate, y_validate, root, plot=PLOT, proc=MULTIPROC):
+	# Get the tree
+	true_label = None
+	correct_total = 0
+	for true_label, row in zip(y_validate,x_validate):
+		prediction = walk(root, row, true_label)
+		if np.sign(true_label) == np.sign(prediction):
+			#d_print("Correct: Predicted: " + str(prediction) + ", Expected: " + str(true_label))
+			correct_total += 1
+		#else:
+			#d_print("inCorrect: Predicted: " + str(prediction) + ", Expected: " + str(true_label))
+	d_print(correct_total)
+	d_print(y_validate.shape[0])
+	return (float(correct_total) / float(y_validate.shape[0]))
 
 def main():
 	#Parsing arguments:
@@ -362,7 +407,17 @@ def main():
 	d_print("Root: "+str(root))
 	feature_list = []
 	# Part 1: Train a Tree
-	train(root, "Decision Tree", feature_list, plot=PLOT, proc=MULTIPROC)
+	root = train(root, "Decision Tree", feature_list, depth_cap=maximum_depth, plot=PLOT, proc=MULTIPROC)
+	# Print the tree:
+	print_tree(root)
+	d_print("Reading in validation Data...")
+	# plot the tree:
+	plot_tree(root)
+	x_validate, y_validate = get_data(path+validation+format, test=False)
+	accuracy = validate(x_train, y_train, root, plot=PLOT, proc=MULTIPROC)
+	d_print("Training accuracy is: " + str(accuracy) + ".")
+	accuracy = validate(x_validate, y_validate, root, plot=PLOT, proc=MULTIPROC)
+	d_print("Validation accuracy is: " + str(accuracy) + ".")
 	# Part 2: Random Forest
 	#train(root, "Random Forest", feature_list, plot=PLOT, proc=MULTIPROC)
 	# Part 3: AdaBoost
