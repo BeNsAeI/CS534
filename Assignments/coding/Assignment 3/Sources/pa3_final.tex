@@ -1,0 +1,178 @@
+\documentclass{article}
+%\usepackage{amsmath}
+\usepackage{xcolor}
+\usepackage{amsmath}
+\usepackage{algorithm}
+\usepackage{tikz}
+\usepackage{graphicx}
+\usepackage{float}
+\usepackage{bm}
+\usepackage[noend]{algpseudocode}
+% titlepage causes separate title page
+% our latex is biased off 1in vertically and horizontally
+\newtheorem{theorem}{Theorem}
+\setlength{\topmargin}{0.1in}
+\setlength{\oddsidemargin}{0in}
+\setlength{\evensidemargin}{0in}
+\setlength{\headheight}{0in}
+\setlength{\headsep}{0in}
+\setlength{\textheight}{9in}
+\setlength{\textwidth}{6.5in}
+% require that floats fill 90% of a page in order for that page to be
+% ``float-only''
+\renewcommand{\dblfloatpagefraction}{0.9}
+\renewcommand{\floatpagefraction}{0.9}
+%\renewcommand{\baselinestretch}{1.2} % interline spacing
+%\setlength{\parindent}{0in}
+%\parskip=10pt plus2pt minus2pt
+%\setlength{\unitlength}{0.1in}
+%\pagestyle{empty} % no page numbering
+\newenvironment{bibparagraph}{\begin{list}{}{ %
+    \setlength{\labelsep}{-\leftmargin} %
+    \setlength{\labelwidth}{0pt} %
+    \setlength{\itemindent}{-\leftmargin} %
+    \setlength{\listparindent}{0pt}}}{\end{list}}
+\def\makefigure#1#2{\begin{figure}
+\begin{center}
+\input{#1}
+\end{center}
+\caption{#2}
+\label{#1}
+\end{figure}}
+
+\def\limplies{\; \supset \;}
+\def\land{\: \wedge \:}
+\def\lor{\: \vee \:}
+\def\iff{\; \equiv \;}
+\def\lnot{\neg}
+\def\lforall#1{\forall \: #1 \;}
+\def\lexists#1{\exists \: #1 \;}
+\def\glitch#1{{\tt #1}} % glitch on
+%\def\glitch#1{} % glitch off
+\def\comment#1{}
+\def\pnil{[\;]}
+\def\pif{\; \mbox{\tt :- } \;}
+\def\tuple#1{$\langle #1\rangle$}
+\def\mtuple#1{\langle #1\rangle}
+\def\ceiling#1{\lceil #1\rceil}
+\def\floor#1{\lfloor #1\rfloor}
+\def\centerps#1{\begin{center}
+\leavevmode
+\epsfbox{#1}
+\end{center}}
+\def\argmax{\mathop{\rm argmax}}
+\def\argmin{\mathop{\rm argmin}}
+\def\grad{\nabla\!}
+\def\celsius{^\circ\mbox{C}}
+\renewcommand{\labelenumi}{(\alph{enumi})}
+
+\def\x{{\bf x}}
+\def\w{{\bf w}}
+
+\begin{document}
+{\Large
+\begin{center}
+CS534 --- Implementation Assignment 3 --- {Due 11:59PM Nov 28, 2018}
+\end{center}
+}
+
+\noindent{\Large
+\textbf{General instructions.
+}}\\ \\
+1. The following languages are acceptable: Java, C/C++, Python, Matlab \\\\
+2. You can work in a team of up to 3 people. Each team will only need to submit one copy of the source code and report. You need to explicitly state each member's contribution in percentages (a rough estimate).\\\\
+3. Your source code and report will be submitted through TEACH \\\\
+{4. You need to submit a readme file that contains the programming language version you use (e.g. python 2.7 ) and the command to run your code (e.g. python main.py).\\\\
+{5. Please make sure that you can be run code remotely on  the server (i.e. babylon01 ) especially if you develop your code using c/c++ under visual studio. }\\\\
+6. Be sure to answer all the questions in your report. You will be graded based on your code as well as the report. In particular, \textbf{the clarity and quality of the report will be worth 10 pts}. So please write your report in clear and concise manner. Clearly label your figures, legends, and tables.\\\\
+7. In your report, the results should always be accompanied by discussions of the results. Do the results follow your expectation? Any surprises? What kind of explanation can you provide? \\
+\newpage
+\noindent{\Large
+\textbf{Decision Tree Ensemble for Optical Character Recognition \\
+(total points: 80 pts + 10 report pts + 10 result pts)
+}}\\\\
+In this assignment we continue working on the Optical Character Recognition task to classify between two numbers 3 and 5. The goal in this assignment is to develop variations of the \textbf{decision tree}.
+\paragraph{Data.} The data for this assignment is generated from the data of implementation assignment 2. We apply the Principal Component Analysis (PCA) to reduce the dimension from 784 to 100. Here is a short description of each train and validation split:\\
+\begin{enumerate}
+\item  \textbf{Train Set (pa3\_train\_reduced.csv):} Includes 4888 rows (samples). Each sample is in fact a list of 101 values. The first number is the digit's label which is 3 or 5. The other 100 floating values are the the flattened feature values given by the PCA.
+\item \textbf{Validation Set (pa3\_valid\_reduced.csv):} Includes 1629 rows. Each row obeys the same format given for the train set. This set will be used to tune the hyper parameters and select the best model.
+\end{enumerate}
+\paragraph{Important Guidelines.} {For all parts of this assignment:
+\begin{enumerate}
+\item Please assign labels +1 to number 3 and -1 to label 5.
+\item Please \underline{do not} add bias to the features.
+\end{enumerate}
+}
+\noindent\rule{16cm}{0.4pt}
+\newpage
+\paragraph{Part 1 (20 pts) : Decision Tree (DT).} For this part we are interested in using a decision tree with below configuration:
+\begin{itemize}
+\item The DT uses \underline{gini-index} to measure the uncertainty. Specifically if we have a node split from list A to two left and right lists AL and AR as depicted in figure~\ref{fig:dt_split} then
+\begin{figure}[H]
+\begin{center}
+\includegraphics[width=6cm, height=3cm]{decisiontree.pdf}
+\end{center}
+\caption{Split list A to two lists AL and AL with feature $f_i$ at threshold T}
+\label{fig:dt_split}
+\end{figure}
+the benefit of split for feature $f_i$ at threshold $T$ is computed as:
+\begin{equation}
+B = U(A) - p_l U(AL) - p_r U(AR)
+\label{eqpredict}
+\end{equation}
+Where $U$ is the gini-index function which is computed for a list such as AL as follows:
+\begin{equation}
+    U(AL) = 1 - p_{+}^{2} - p_{-}^{2} = 1 - (\frac{CL_{+}}{CL_{+} + CL_{-}})^{2} - (\frac{CL_{-}}{CL_{+} + CL_{-}})^{2}
+\end{equation}
+and $p_l$ and $p_r$ are the probabilities for each split which is given by \\
+\begin{equation}
+    p_l = \frac{CL_{+} + CL_{-}}{C_{+} + C_{-}}
+\end{equation}
+\item The feature values are continuous. Therefore you need to follow the descriptions and hints given in the slide to search for the best threshold $T$ for a feature $f_i$.\\
+\end{itemize}
+Please implement below steps:
+\begin{enumerate}
+    \item Create a decision tree with \underline{maximum depth of 20} (root is at depth=0) on the train data. (Note that a normal implementation of the tree should take about 220 seconds on Babylon for this maximum of depth.) 
+    \item Using the created decision tree, compute and plot the train and validation accuracy versus depth.
+    \item Explain the behavior of train/validation performance against the depth. At which depth the train accuracy reaches to $100\%$ accuracy? If your tree could not get to $100\%$ before the depth of 20, keep on extending the tree in depth until it reaches $100\%$ for the train accuracy.
+    \item Report the depth that gives the best validation accuracy?
+\end{enumerate}
+\paragraph{Part 2 (30 pts) : Random Forest (Bagging).}
+In this part we are interested in random forest which is a variation of bagging without some of its limitations. Please implement below steps:
+\begin{enumerate}
+    \item Implement a random forest with below parameters:\\
+     $n$ : The number of trees in the forest.\\
+     $m$ : The number of features for a tree.\\
+     $d$ : Maximum depth of the trees in the forest.\\\\
+     Here is how the forest is created: The random forest is a collection of $n$ trees. All the trees in the forest has maximum depth of $d$. Each tree is built on a data set of size 4888 sampled (with replacement) from the train set. In the process of building a tree of the forest, each time we try to find the best feature $f_i$ to split, we need to first sub-sample (without replacement) $m$ number of features from 100 feature set and then pick $f_i$ with highest benefit from $m$ sampled features.
+    \item For $d=9$, $m=10$ and $n \in [1, 2, 5, 10, 25]$, plot the train and validation accuracy of the forest versus the number of trees in the forest $n$.
+    \item What effect adding more tree into a forest has on the train/validation performance? Why?
+    \item Repeat above experiments for $d=9$ and $m \in [20, 50]$. How greater $m$ changes the train/validation accuracy? Why?
+\end{enumerate}
+\paragraph{Part 3 (30 pts) : AdaBoost (Boosting).}
+ For this part we are interested in applying AdaBoost to create yet another ensemble model with decision tree. Considering the AdaBoost algorithm described in the slide, please do below steps:
+ \begin{enumerate}
+     \item Let the weak learner be a decision tree with depth of 9. 
+     The decision tree should get a weight parameter $D$ which is a vector of size 4888 (train size). Implement the decision tree with parameter $D$ such that it considers $D$ in its functionality.\\ (Hint: It changes the gini-index and also the predictions at leaves).
+     \item Using the decision tree with parameter $D$ implemented above, develop the AdaBoost algorithm as described in the slide with parameter L. 
+     \item Report the train and validation accuracy for $L\in [1, 5, 10, 20]$.
+     \item Explain the behavior of AdaBoost against the parameter $L$.
+ \end{enumerate}
+
+\paragraph{ Submission.}{Your submission should include the following:\\ 
+1) Your source code with a short instruction on how to run the code in a \underline{readme.txt}.\\
+2) Your report only in \underline{pdf}, which begins with a general introduction section, followed by one section for each part of the assignment.\\
+3) Please note that all the files should be in one folder and compressed only by \underline{.zip.}}
+%\textbf{Note, your report should have the following structure:}
+
+%\begin{enumerate}
+%  \item List group members, indicate project contribution for each member in percentages.
+%  \item Introduction (Briefly state the problem you are solving).
+%  \item Learning rate for gradient descent.
+%  \item \textcolor{red}{ Table of feature statistics and weights you learned for all features.}
+%  \item \textcolor{red}{Experiments with different $\lambda$ values (thoroughly answer 4 questions listed in Part 3).}
+%  \item \textcolor{red}{  Experiments with different learning rate values using the non-normalized version of the data.}
+%\end{enumerate}
+%
+
+\end{document}
