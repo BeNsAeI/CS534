@@ -16,7 +16,7 @@ DEBUG = False
 VERBOSE = False
 PLOT = False
 MULTIPROC = False
-threshol_grain = 400
+threshol_grain = 1
 maximum_depth = 20
 node_count = 0
 # State
@@ -234,6 +234,7 @@ def print_tree(root, count=0):
 		print_tree(root.Left, count+1)
 	if root.Right != None:
 		print_tree(root.Right,count+1)
+
 def find_threshold(state, j_range_low, j_range_upper, feature_list, big_data):
 	best_benefit = -10.0
 	best_condition = None
@@ -250,7 +251,6 @@ def find_threshold(state, j_range_low, j_range_upper, feature_list, big_data):
 						best_benefit = index_benefit
 						best_condition = condition
 	return best_condition
-#	return Condition(Feature=1, Type='<', Threshold=5*threshol_grain)
 
 def train(root, type, feature_list, depth_cap=maximum_depth, par_id=None, marker=None, plot=False, proc=False):
 	if depth_cap == maximum_depth:
