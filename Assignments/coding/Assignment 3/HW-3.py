@@ -17,8 +17,10 @@ VERBOSE = False
 PLOT = False
 MULTIPROC = False
 threshol_grain = 1
-maximum_depth = 37
+maximum_depth = 20
 node_count = 0
+feature_list = []
+
 # State
 ## myState = State(X, Y)
 ## Or
@@ -228,27 +230,32 @@ def print_tree(root, count=0):
 	if root.Right != None:
 		print_tree(root.Right,count+1)
 
-def find_threshold(state, feature_index, feature_list, big_data):
+def find_threshold(state, feature_index, big_data):
 	thresholds = []
+	global feature_list
 	feature = state.X[:, feature_index]
 	feature = np.vstack((feature, state.Y)).T
 	feature = np.sort(feature, axis=0)
 	for i in range(1,feature.shape[0]):
 		if np.sign(feature[i-1,1]) != np.sign(feature[i,1]):
-			thresholds.append(feature[i,0])
+			threshold = (feature[i,0] + feature[i-1,0])/2
+			thresholds.append(threshold)
+			#thresholds.append(feature[i,0])
+			#thresholds.append(feature[i-1,0])
 	return thresholds
 
-def find_best_benefit(state, feature_list, big_data):
+def find_best_benefit(state, big_data):
+	global feature_list
 	best_benefit = -np.inf
 	index_benefit = -np.inf
 	best_condition = None
 	for i in range(0,state.X.shape[1]):
-		thresholds = find_threshold(state, i, feature_list, big_data)
+		thresholds = find_threshold(state, i, big_data)
 		for j in thresholds:
 			if not ([i,j] in feature_list):
 				condition = Condition(Feature=i, Type='<', Threshold=j)
 				left_state_Y, right_state_Y = get_Y_state(state, condition)
-				if not (left_state_Y.shape[0] == 0 or right_state_Y.shape[0] == 0):
+				if left_state_Y.shape[0] != 0 and right_state_Y.shape[0] != 0:
 					left_data = C(left_state_Y)
 					right_data = C(right_state_Y)
 					index_benefit = B(big_data, left_data, right_data)
@@ -256,7 +263,7 @@ def find_best_benefit(state, feature_list, big_data):
 						best_benefit = index_benefit
 						best_condition = condition
 				condition = Condition(Feature=i, Type='>', Threshold=j)
-				if not (left_state_Y.shape[0] == 0 or right_state_Y.shape[0] == 0):
+				if left_state_Y.shape[0] != 0 and right_state_Y.shape[0] != 0:
 					left_data = C(left_state_Y)
 					right_data = C(right_state_Y)
 					index_benefit = B(big_data, left_data, right_data)
@@ -265,14 +272,14 @@ def find_best_benefit(state, feature_list, big_data):
 						best_condition = condition
 	return best_condition
 
-def train(root, type, feature_list, depth_cap=maximum_depth, plot=False, proc=False):
+def train(root, type, depth_cap=maximum_depth, plot=False, proc=False):
 	if depth_cap == maximum_depth:
 		d_print("\n___\nTraining "+ type+". Max depth: "+ str(depth_cap))
 	global node_count
+	global feature_list
 	if type == "Decision Tree" and depth_cap > 0:
 		big_data = C(root.State.Y)
 		best_condition = find_best_benefit(root.State,
-			feature_list,
 			big_data)
 		if best_condition != None:
 			feature_list.append([best_condition.Feature,best_condition.Threshold])
@@ -280,19 +287,20 @@ def train(root, type, feature_list, depth_cap=maximum_depth, plot=False, proc=Fa
 			node_count += 1
 			d_print("Node "+ str(maximum_depth - depth_cap) + ": " + str(node_count) + " has " + str(best_condition))
 
-			left_node = train(root.Left, "Decision Tree", feature_list, depth_cap=depth_cap - 1, plot=plot)
-			right_node= train(root.Right,"Decision Tree", feature_list, depth_cap=depth_cap - 1, plot=plot)
+			left_node = train(root.Left, "Decision Tree", depth_cap=depth_cap - 1, plot=plot)
+			right_node= train(root.Right,"Decision Tree", depth_cap=depth_cap - 1, plot=plot)
 			root = Node(Data=root.Data,
 				State=root.State,
 				Condition=root.Condition,
 				Parent=root.Parent,
 				Left=left_node,
 				Right=right_node)
+		#d_print(feature_list)
 		return root
 
 def walk(node, row, true_label):
 	if node.Left == None and node.Right == None:
-		if node.Data.Positive > node.Data.Negative:
+		if node.Data.Positive >= node.Data.Negative:
 			return +1
 		else:
 			return -1
@@ -354,10 +362,10 @@ def main():
 	d_print("Initiating the Node")
 	root = Node(Data=root_data, State=root_state, Condition=None, Parent=None, Left=None, Right=None)
 	d_print("Root: "+str(root))
-	feature_list = []
+	global feature_list
 	# Part 1: Train a Tree
 	start = time.time()
-	root = train(root, "Decision Tree", feature_list, depth_cap=maximum_depth, plot=PLOT, proc=MULTIPROC)
+	root = train(root, "Decision Tree", depth_cap=maximum_depth, plot=PLOT, proc=MULTIPROC)
 	end = time.time()
 	#d_print("Training took: " + str(end - start) + " seconds")
 	# Print the tree:
