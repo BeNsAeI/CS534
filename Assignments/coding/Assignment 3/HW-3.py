@@ -235,7 +235,7 @@ def print_tree(root, count=0):
 	if root.Right != None:
 		print_tree(root.Right,count+1)
 
-def find_threshold(state, j_range_low, j_range_upper, feature_list, big_data):
+def find_best_benefit(state, j_range_low, j_range_upper, feature_list, big_data):
 	best_benefit = -10.0
 	best_condition = None
 	for i in range(0,state.X.shape[1]):
@@ -252,20 +252,44 @@ def find_threshold(state, j_range_low, j_range_upper, feature_list, big_data):
 						best_condition = condition
 	return best_condition
 
+def find_threshold(state, feature_index, feature_list, big_data):
+	thresholds = []
+	feature = state.X[:, feature_index]
+	feature = np.vstack((feature, state.Y)).T
+	feature = np.sort(feature, axis=0)
+	for i in range(1,feature.shape[0]):
+		if np.sign(feature[i-1,1]) != np.sign(feature[i,1]):
+			thresholds.append(feature[i,0])
+	return thresholds
+
+def find_best_benefit_improved(state, feature_list, big_data):
+	best_benefit = -np.inf
+	index_benefit = -np.inf
+	best_condition = None
+	for i in range(0,state.X.shape[1]):
+		thresholds = find_threshold(state, i, feature_list, big_data)
+		for j in thresholds:
+			if not ([i,j] in feature_list):
+				condition = Condition(Feature=i, Type='<', Threshold=j)
+				left_state_Y, right_state_Y = get_Y_state(state, condition)
+				if not (left_state_Y.shape[0] == 0 or right_state_Y.shape[0] == 0):
+					left_data = C(left_state_Y)
+					right_data = C(right_state_Y)
+					index_benefit = B(big_data, left_data, right_data)
+					if (best_benefit < index_benefit):
+						best_benefit = index_benefit
+						best_condition = condition
+	return best_condition
+
 def train(root, type, feature_list, depth_cap=maximum_depth, par_id=None, marker=None, plot=False, proc=False):
 	if depth_cap == maximum_depth:
 		d_print("\n___\nTraining "+ type+". Max depth: "+ str(depth_cap))
 	global node_count
 	if type == "Decision Tree" and depth_cap > 0:
 		big_data = C(root.State.Y)
-		start = time.time()
-		best_condition = find_threshold(root.State,
-			-1400/threshol_grain,
-			1600/threshol_grain,
+		best_condition = find_best_benefit_improved(root.State,
 			feature_list,
 			big_data)
-		end = time.time()
-		d_print(end - start)
 		if best_condition != None:
 			feature_list.append([best_condition.Feature,best_condition.Threshold])
 			root = split(root, best_condition)
@@ -283,10 +307,6 @@ def train(root, type, feature_list, depth_cap=maximum_depth, par_id=None, marker
 		return root
 
 def walk(node, row, true_label):
-	# grab the feature
-	# check the condition
-	# select branch
-	# recurse
 	if node.Left == None and node.Right == None:
 		if node.Data.Positive > node.Data.Negative:
 			return +1
@@ -352,7 +372,10 @@ def main():
 	d_print("Root: "+str(root))
 	feature_list = []
 	# Part 1: Train a Tree
+	start = time.time()
 	root = train(root, "Decision Tree", feature_list, depth_cap=maximum_depth, plot=PLOT, proc=MULTIPROC)
+	end = time.time()
+	#d_print("Training took: " + str(end - start) + " seconds")
 	# Print the tree:
 	print_tree(root)
 	d_print("Reading in validation Data...")
@@ -362,6 +385,7 @@ def main():
 	d_print("Training accuracy is: " + str(accuracy) + ".")
 	accuracy = validate(x_validate, y_validate, root, plot=PLOT, proc=MULTIPROC)
 	d_print("Validation accuracy is: " + str(accuracy) + ".")
+	d_print("Training took: " + str(end - start) + " seconds")
 	# Part 2: Random Forest
 	#train(root, "Random Forest", feature_list, plot=PLOT, proc=MULTIPROC)
 	# Part 3: AdaBoost
