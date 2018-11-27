@@ -17,7 +17,7 @@ VERBOSE = False
 PLOT = False
 MULTIPROC = False
 threshol_grain = 1
-maximum_depth = 20
+maximum_depth = 37
 node_count = 0
 # State
 ## myState = State(X, Y)
@@ -60,14 +60,8 @@ def d_print(value):
 
 # Count
 def C(Y):
-	# Format only use the column indicated by condition.Feature
-	sum = np.sign(Y).sum()
-	pos = (Y.shape[0] - sum)/2
-	neg = pos
-	if sum > 0:
-		pos += abs(sum)
-	else:
-		neg += abs(sum)
+	pos = Y[Y>0].shape[0]
+	neg = Y.shape[0] - pos
 	return Data(Positive=pos, Negative=neg)
 
 def get_Y_state(state, condition):
@@ -166,17 +160,16 @@ def split(node, condition):
 
 # Probability
 def P(big_pos_c, big_neg_c, small_pos_c, small_neg_c):
-	return (small_pos_c + small_neg_c)/(big_pos_c + big_neg_c)
+	return (float(small_pos_c + small_neg_c)/float(big_pos_c + big_neg_c))
 
 # Gini-index
 def U(small_pos_c, small_neg_c):
-	p_pos = small_pos_c / small_pos_c + small_neg_c
-	p_neg = small_neg_c / small_pos_c + small_neg_c
-	return 1 - (p_pos * p_pos) - (p_neg * p_neg)
+	p_pos = float(small_pos_c) / float(small_pos_c + small_neg_c)
+	p_neg = float(small_neg_c) / float(small_pos_c + small_neg_c)
+	return (1 - (p_pos * p_pos) - (p_neg * p_neg))
 
 # Benefit:
 def B(big_data, small_left_data, small_right_data):
-	B = None
 
 	big_pos_c = big_data.Positive
 	big_neg_c = big_data.Negative
@@ -235,23 +228,6 @@ def print_tree(root, count=0):
 	if root.Right != None:
 		print_tree(root.Right,count+1)
 
-def find_best_benefit(state, j_range_low, j_range_upper, feature_list, big_data):
-	best_benefit = -10.0
-	best_condition = None
-	for i in range(0,state.X.shape[1]):
-		for j in range(j_range_low, j_range_upper):
-			if not ([i,j] in feature_list):
-				condition = Condition(Feature=i, Type='<', Threshold=j*threshol_grain)
-				left_state_Y, right_state_Y = get_Y_state(state, condition)
-				if not (left_state_Y.shape[0] == 0 or right_state_Y.shape[0] == 0):
-					left_data = C(left_state_Y)
-					right_data = C(right_state_Y)
-					index_benefit = B(big_data, left_data, right_data)
-					if (best_benefit <= index_benefit):
-						best_benefit = index_benefit
-						best_condition = condition
-	return best_condition
-
 def find_threshold(state, feature_index, feature_list, big_data):
 	thresholds = []
 	feature = state.X[:, feature_index]
@@ -262,7 +238,7 @@ def find_threshold(state, feature_index, feature_list, big_data):
 			thresholds.append(feature[i,0])
 	return thresholds
 
-def find_best_benefit_improved(state, feature_list, big_data):
+def find_best_benefit(state, feature_list, big_data):
 	best_benefit = -np.inf
 	index_benefit = -np.inf
 	best_condition = None
@@ -279,15 +255,23 @@ def find_best_benefit_improved(state, feature_list, big_data):
 					if (best_benefit < index_benefit):
 						best_benefit = index_benefit
 						best_condition = condition
+				condition = Condition(Feature=i, Type='>', Threshold=j)
+				if not (left_state_Y.shape[0] == 0 or right_state_Y.shape[0] == 0):
+					left_data = C(left_state_Y)
+					right_data = C(right_state_Y)
+					index_benefit = B(big_data, left_data, right_data)
+					if (best_benefit < index_benefit):
+						best_benefit = index_benefit
+						best_condition = condition
 	return best_condition
 
-def train(root, type, feature_list, depth_cap=maximum_depth, par_id=None, marker=None, plot=False, proc=False):
+def train(root, type, feature_list, depth_cap=maximum_depth, plot=False, proc=False):
 	if depth_cap == maximum_depth:
 		d_print("\n___\nTraining "+ type+". Max depth: "+ str(depth_cap))
 	global node_count
 	if type == "Decision Tree" and depth_cap > 0:
 		big_data = C(root.State.Y)
-		best_condition = find_best_benefit_improved(root.State,
+		best_condition = find_best_benefit(root.State,
 			feature_list,
 			big_data)
 		if best_condition != None:
