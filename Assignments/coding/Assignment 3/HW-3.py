@@ -15,9 +15,9 @@ DEBUG = False
 VERBOSE = False
 PLOT = False
 MULTIPROC = False
-threshol_grain = 4
+threshol_grain = 400
 maximum_depth = 20
-
+node_count = 0
 # State
 ## myState = State(X, Y)
 ## Or
@@ -58,20 +58,16 @@ def d_print(value):
 		print(value)
 
 # Count
-def C(Y, ret_out=None):
+def C(Y):
 	# Format only use the column indicated by condition.Feature
-	out = None
-	sum = Y.sum()
+	sum = np.sign(Y).sum()
 	pos = (Y.shape[0] - sum)/2
-	neg = (Y.shape[0] - sum)/2
+	neg = pos
 	if sum > 0:
 		pos += abs(sum)
 	else:
 		neg += abs(sum)
-	out = Data(Positive=pos, Negative=neg)
-	if ret_out != None:
-		ret_out.put(out)
-	return out
+	return Data(Positive=pos, Negative=neg)
 
 def get_state(state, condition):
 	left_X = state.X
@@ -94,7 +90,7 @@ def get_state(state, condition):
 				delete_Y_left.append(i)
 	else:
 		for i in range(0,feature.shape[0]):
-			if feature[i] > condition.Threshold:
+			if feature[i] >= condition.Threshold:
 				delete_rows_right.append(i)
 				delete_Y_right.append(i)
 			else:
@@ -130,44 +126,36 @@ def split(node, condition):
 		Left=None,
 		Right=None)
 
-	right_node= Node(Data=right_data,
+	right_node = Node(Data=right_data,
 		State=right_state,
 		Condition=right_condition,
 		Parent=node,
 		Left=None,
 		Right=None)
 
-	new_node = Node(Data=node.Data,
+	new_node=Node(Data=node.Data,
 		State=node.State,
 		Condition=node.Condition,
 		Parent=node.Parent,
 		Left=left_node,
 		Right=right_node)
-	return new_node
+
+	return new_node #left_node, right_node
 
 # Probability
 def P(big_pos_c, big_neg_c, small_pos_c, small_neg_c):
-	return ((small_pos_c + small_neg_c)/(big_pos_c + big_neg_c))
+	return (small_pos_c + small_neg_c)/(big_pos_c + big_neg_c)
 
 # Gini-index
 def U(small_pos_c, small_neg_c):
-	p_pos = small_pos_c / (small_pos_c + small_neg_c)
-	p_neg = small_neg_c / (small_pos_c + small_neg_c)
-	if (small_pos_c + small_neg_c == 0):
-		d_print(small_pos_c)
-		d_print(small_neg_c)
-		exit(1)
+	p_pos = small_pos_c / small_pos_c + small_neg_c
+	p_neg = small_neg_c / small_pos_c + small_neg_c
 	return 1 - (p_pos * p_pos) - (p_neg * p_neg)
 
 # Benefit:
-def B(main_state, left_state, right_state):
+def B(big_data, left_state, right_state):
 	B = None
 
-	if main_state.Y.shape[0] == 0:
-		d_print("main_state.Y.shape[0] is 0")
-		exit(1)
-
-	big_data = C(main_state.Y)
 	big_pos_c = big_data.Positive
 	big_neg_c = big_data.Negative
 
@@ -178,19 +166,6 @@ def B(main_state, left_state, right_state):
 	small_right_data = C(right_state.Y)
 	small_right_pos_c = small_right_data.Positive
 	small_right_neg_c = small_right_data.Negative
-
-	if(big_pos_c + big_neg_c == 0):
-		d_print("Main division by 0")
-		d_print(main_state.Y)
-		exit(1)
-	if(small_left_pos_c + small_left_neg_c == 0):
-		d_print("Left Division by 0")
-		d_print(left_state.Y)
-		exit(1)
-	if (small_right_pos_c + small_right_neg_c == 0):
-		d_print("Right division by 0")
-		d_print(right_state.Y)
-		exit(1)
 
 	U_A = U(big_pos_c, big_neg_c)
 	U_AL = U(small_left_pos_c, small_left_neg_c)
@@ -240,35 +215,30 @@ def print_tree(root, count=0):
 	if root.Right != None:
 		print_tree(root.Right,count+1)
 
-def train(root, type, feature_list, depth_cap=20, par_id=None, marker=None, plot=False, proc=False):
-	d_print("\n___\nTraining "+ type+". Max depth: "+ str(depth_cap))
-	#d_print(root.State.X.shape[0])
-	if root.State.X.shape[0] == 0:
-		d_print("Branch terminated.")
-		return root
-	#d_print(root.State.X.shape[1] - len(feature_list))
+def train(root, type, feature_list, depth_cap=maximum_depth, par_id=None, marker=None, plot=False, proc=False):
+	if depth_cap == maximum_depth:
+		d_print("\n___\nTraining "+ type+". Max depth: "+ str(depth_cap))
+	global node_count
 	if type == "Decision Tree" and depth_cap > 0:
-		best_benefit = 0.0
+		best_benefit = -10.0
 		best_condition = None
+		big_data = C(root.State.Y)
 		for i in range(0,root.State.X.shape[1]):
-			for j in range(-14/threshol_grain,16/threshol_grain):
-				if [i,j] in feature_list:
-					#d_print("skipping feature ["+ str(i) + ", " + str(j) + "]")
-					continue
-				else:
-					condition = Condition(Feature=i, Type='<', Threshold=j*100*threshol_grain)
+			for j in range(-1400/threshol_grain,1600/threshol_grain):
+				if not ([i,j] in feature_list):
+					condition = Condition(Feature=i, Type='<', Threshold=j*threshol_grain)
 					left_state, right_state = get_state(root.State, condition)
-					if left_state.Y.shape[0] == 0 or right_state.Y.shape[0] == 0:
-						continue
-					else:
-						index_benefit = B(root.State, left_state, right_state)
-						if (best_benefit > index_benefit):
+					if not (left_state.Y.shape[0] == 0 or right_state.Y.shape[0] == 0):
+						index_benefit = B(big_data, left_state, right_state)
+						if (best_benefit <= index_benefit):
 							best_benefit = index_benefit
 							best_condition = condition
 		if best_condition != None:
 			feature_list.append([best_condition.Feature,best_condition.Threshold])
 			root = split(root, best_condition)
-			d_print("Node "+ str(20 - depth_cap) + " has " + str(best_condition))
+			node_count += 1
+			d_print("Node "+ str(maximum_depth - depth_cap) + ": " + str(node_count) + " has " + str(best_condition))
+
 			left_node = train(root.Left, "Decision Tree", feature_list, depth_cap=depth_cap - 1, plot=plot)
 			right_node = train(root.Right, "Decision Tree", feature_list, depth_cap=depth_cap - 1, plot=plot)
 			root = Node(Data=root.Data,
@@ -277,17 +247,22 @@ def train(root, type, feature_list, depth_cap=20, par_id=None, marker=None, plot
 				Parent=root.Parent,
 				Left=left_node,
 				Right=right_node)
+		else:
+			root = Node(Data=root.Data,
+				State=root.State,
+				Condition=root.Condition,
+				Parent=root.Parent,
+				Left=None,
+				Right=None)
 		return root
 
 def walk(node, row, true_label):
-	#d_print(str(true_label) + ": " + str(row[node.Left.Condition.Feature]))
 	# grab the feature
 	# check the condition
 	# select branch
 	# recurse
-	#d_print(node.Condition)
-	#d_print(node.Data)
-	if node.Left == None:
+	if node.Left == None and node.Right == None:
+		#d_print("[" + str(node.Data.Positive) + ", " + str(node.Data.Negative) + "]")
 		if node.Data.Positive > node.Data.Negative:
 			return +1
 		else:
@@ -299,7 +274,7 @@ def walk(node, row, true_label):
 			else:
 				return walk(node.Right, row, true_label)
 		else:
-			if row[node.Left.Condition.Feature] > node.Left.Condition.Threshold:
+			if row[node.Left.Condition.Feature] >= node.Left.Condition.Threshold:
 				return walk(node.Right, row, true_label)
 			else:
 				return walk(node.Left, row, true_label)
@@ -315,6 +290,13 @@ def validate(x_validate, y_validate, root, plot=PLOT, proc=MULTIPROC):
 		if np.sign(true_label) == np.sign(prediction):
 			correct_total += 1
 	return (float(correct_total) / float(y_validate.shape[0]))
+
+def delete_tree(root):
+	if root.Left != None:
+		delete_tree(root.Left)
+	if root.Right != None:
+		delete_tree(root.Right)
+	del root
 
 def main():
 	#Parsing arguments:
@@ -361,6 +343,9 @@ def main():
 	#train(root, "Adaboost", feature_list, plot=PLOT, proc=MULTIPROC)
 	#cleaning up
 	d_print("\n___\nCleaning up ...")
+	del root_data
+	del root_state
+	delete_tree(root)
 	d_print("Done.")
 
 if __name__ == "__main__":
