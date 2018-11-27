@@ -1,6 +1,7 @@
 import os
 import pickle
 import argparse
+import time
 import numpy as np
 import multiprocessing as mp
 from subprocess import call
@@ -68,6 +69,27 @@ def C(Y):
 	else:
 		neg += abs(sum)
 	return Data(Positive=pos, Negative=neg)
+
+def get_Y_state(state, condition):
+	left_Y = state.Y
+	right_Y = state.Y
+	delete_Y_left = []
+	delete_Y_right = []
+
+#	start = time.time()
+	feature = state.X[:, condition.Feature]
+	feature = np.vstack((np.arange(feature.shape[0]), feature)).T
+	if condition.Type == '<':
+		delete_Y_right = (feature[feature[:,1] > condition.Threshold])[:, 0]
+		delete_Y_left =  (feature[feature[:,1] <= condition.Threshold])[:, 0]
+	else:
+		delete_Y_right = (feature[feature[:,1] <= condition.Threshold])[:, 0]
+		delete_Y_left =  (feature[feature[:,1] > condition.Threshold])[:, 0]
+#	end = time.time()
+#	d_print(end - start)
+	left_Y = np.delete(left_Y, delete_Y_left , axis=0)
+	right_Y=np.delete(right_Y, delete_Y_right, axis=0)
+	return left_Y, right_Y
 
 def get_state(state, condition):
 	left_X = state.X
@@ -140,7 +162,7 @@ def split(node, condition):
 		Left=left_node,
 		Right=right_node)
 
-	return new_node #left_node, right_node
+	return new_node
 
 # Probability
 def P(big_pos_c, big_neg_c, small_pos_c, small_neg_c):
@@ -153,17 +175,15 @@ def U(small_pos_c, small_neg_c):
 	return 1 - (p_pos * p_pos) - (p_neg * p_neg)
 
 # Benefit:
-def B(big_data, left_state, right_state):
+def B(big_data, small_left_data, small_right_data):
 	B = None
 
 	big_pos_c = big_data.Positive
 	big_neg_c = big_data.Negative
 
-	small_left_data = C(left_state.Y)
 	small_left_pos_c = small_left_data.Positive
 	small_left_neg_c = small_left_data.Negative
 
-	small_right_data = C(right_state.Y)
 	small_right_pos_c = small_right_data.Positive
 	small_right_neg_c = small_right_data.Negative
 
@@ -214,25 +234,38 @@ def print_tree(root, count=0):
 		print_tree(root.Left, count+1)
 	if root.Right != None:
 		print_tree(root.Right,count+1)
+def find_threshold(state, j_range_low, j_range_upper, feature_list, big_data):
+	best_benefit = -10.0
+	best_condition = None
+	for i in range(0,state.X.shape[1]):
+		for j in range(j_range_low, j_range_upper):
+			if not ([i,j] in feature_list):
+				condition = Condition(Feature=i, Type='<', Threshold=j*threshol_grain)
+				left_state_Y, right_state_Y = get_Y_state(state, condition)
+				if not (left_state_Y.shape[0] == 0 or right_state_Y.shape[0] == 0):
+					left_data = C(left_state_Y)
+					right_data = C(right_state_Y)
+					index_benefit = B(big_data, left_data, right_data)
+					if (best_benefit <= index_benefit):
+						best_benefit = index_benefit
+						best_condition = condition
+	return best_condition
+#	return Condition(Feature=1, Type='<', Threshold=5*threshol_grain)
 
 def train(root, type, feature_list, depth_cap=maximum_depth, par_id=None, marker=None, plot=False, proc=False):
 	if depth_cap == maximum_depth:
 		d_print("\n___\nTraining "+ type+". Max depth: "+ str(depth_cap))
 	global node_count
 	if type == "Decision Tree" and depth_cap > 0:
-		best_benefit = -10.0
-		best_condition = None
 		big_data = C(root.State.Y)
-		for i in range(0,root.State.X.shape[1]):
-			for j in range(-1400/threshol_grain,1600/threshol_grain):
-				if not ([i,j] in feature_list):
-					condition = Condition(Feature=i, Type='<', Threshold=j*threshol_grain)
-					left_state, right_state = get_state(root.State, condition)
-					if not (left_state.Y.shape[0] == 0 or right_state.Y.shape[0] == 0):
-						index_benefit = B(big_data, left_state, right_state)
-						if (best_benefit <= index_benefit):
-							best_benefit = index_benefit
-							best_condition = condition
+		start = time.time()
+		best_condition = find_threshold(root.State,
+			-1400/threshol_grain,
+			1600/threshol_grain,
+			feature_list,
+			big_data)
+		end = time.time()
+		d_print(end - start)
 		if best_condition != None:
 			feature_list.append([best_condition.Feature,best_condition.Threshold])
 			root = split(root, best_condition)
@@ -240,20 +273,13 @@ def train(root, type, feature_list, depth_cap=maximum_depth, par_id=None, marker
 			d_print("Node "+ str(maximum_depth - depth_cap) + ": " + str(node_count) + " has " + str(best_condition))
 
 			left_node = train(root.Left, "Decision Tree", feature_list, depth_cap=depth_cap - 1, plot=plot)
-			right_node = train(root.Right, "Decision Tree", feature_list, depth_cap=depth_cap - 1, plot=plot)
+			right_node= train(root.Right,"Decision Tree", feature_list, depth_cap=depth_cap - 1, plot=plot)
 			root = Node(Data=root.Data,
 				State=root.State,
 				Condition=root.Condition,
 				Parent=root.Parent,
 				Left=left_node,
 				Right=right_node)
-		else:
-			root = Node(Data=root.Data,
-				State=root.State,
-				Condition=root.Condition,
-				Parent=root.Parent,
-				Left=None,
-				Right=None)
 		return root
 
 def walk(node, row, true_label):
@@ -262,7 +288,6 @@ def walk(node, row, true_label):
 	# select branch
 	# recurse
 	if node.Left == None and node.Right == None:
-		#d_print("[" + str(node.Data.Positive) + ", " + str(node.Data.Negative) + "]")
 		if node.Data.Positive > node.Data.Negative:
 			return +1
 		else:
