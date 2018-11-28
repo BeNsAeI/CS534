@@ -68,24 +68,18 @@ def C(Y):
 
 def get_Y_state(state, condition):
 	left_Y = state.Y
-	right_Y = state.Y
-	delete_Y_left = []
-	delete_Y_right = []
-
-#	start = time.time()
 	feature = state.X[:, condition.Feature]
 	feature = np.vstack((np.arange(feature.shape[0]), feature)).T
 	if condition.Type == '<':
-		delete_Y_right = (feature[feature[:,1] > condition.Threshold])[:, 0]
 		delete_Y_left =  (feature[feature[:,1] <= condition.Threshold])[:, 0]
 	else:
-		delete_Y_right = (feature[feature[:,1] <= condition.Threshold])[:, 0]
 		delete_Y_left =  (feature[feature[:,1] > condition.Threshold])[:, 0]
-#	end = time.time()
-#	d_print(end - start)
 	left_Y = np.delete(left_Y, delete_Y_left , axis=0)
-	right_Y=np.delete(right_Y, delete_Y_right, axis=0)
-	return left_Y, right_Y
+	count_state = C(state.Y)
+	count_left = C(left_Y)
+	count_right= Data(Positive=count_state.Positive - count_left.Positive,
+					  Negative=count_state.Negative - count_left.Negative)
+	return count_left, count_right
 
 def get_state(state, condition):
 	left_X = state.X
@@ -239,7 +233,8 @@ def find_threshold(state, feature_index):
 	for i in range(1,feature.shape[0]):
 		if np.sign(feature[i-1,1]) != np.sign(feature[i,1]):
 			threshold = (feature[i,0] + feature[i-1,0])/2
-			thresholds.append(threshold)
+			if not ([feature_index,threshold] in feature_list):
+				thresholds.append(threshold)
 	return thresholds
 
 def find_best_benefit(state, big_data):
@@ -247,22 +242,23 @@ def find_best_benefit(state, big_data):
 	best_benefit = -np.inf
 	index_benefit = -np.inf
 	best_condition = None
-	start = time.time()
+	#start = time.time()
 	for i in range(0,state.X.shape[1]):
+		feature = state.X[:, i]
+		feature = np.vstack((feature, state.Y)).T
+		feature = feature[feature[:, 0].argsort()]
 		thresholds = find_threshold(state, i)
+		start = time.time()
 		for j in thresholds:
-			if not ([i,j] in feature_list):
-				condition = Condition(Feature=i, Type='<', Threshold=j)
-				left_state_Y, right_state_Y = get_Y_state(state, condition)
-				if left_state_Y.shape[0] != 0 and right_state_Y.shape[0] != 0:
-					left_data = C(left_state_Y)
-					right_data = C(right_state_Y)
-					index_benefit = B(big_data, left_data, right_data)
-					if (best_benefit < index_benefit):
-						best_benefit = index_benefit
-						best_condition = condition
-	end = time.time()
-	d_print("Training took: " + str(end - start) + " seconds")
+			condition = Condition(Feature=i, Type='<', Threshold=j)
+			left_data, right_data = get_Y_state(state, condition)
+			index_benefit = B(big_data, left_data, right_data)
+			if (best_benefit < index_benefit):
+				best_benefit = index_benefit
+				best_condition = condition
+		end = time.time()
+		if best_condition != None:
+			d_print("Training " + str([i,best_condition.Threshold]) + " took: " + str(end - start) + " seconds")
 	return best_condition
 
 def train(root, type, depth_cap=maximum_depth, plot=False, proc=False):
