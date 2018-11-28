@@ -230,18 +230,16 @@ def print_tree(root, count=0):
 	if root.Right != None:
 		print_tree(root.Right,count+1)
 
-def find_threshold(state, feature_index, big_data):
+def find_threshold(state, feature_index):
 	thresholds = []
 	global feature_list
 	feature = state.X[:, feature_index]
 	feature = np.vstack((feature, state.Y)).T
-	feature = np.sort(feature, axis=0)
+	feature = feature[feature[:, 0].argsort()]
 	for i in range(1,feature.shape[0]):
 		if np.sign(feature[i-1,1]) != np.sign(feature[i,1]):
 			threshold = (feature[i,0] + feature[i-1,0])/2
 			thresholds.append(threshold)
-			#thresholds.append(feature[i,0])
-			#thresholds.append(feature[i-1,0])
 	return thresholds
 
 def find_best_benefit(state, big_data):
@@ -249,8 +247,9 @@ def find_best_benefit(state, big_data):
 	best_benefit = -np.inf
 	index_benefit = -np.inf
 	best_condition = None
+	start = time.time()
 	for i in range(0,state.X.shape[1]):
-		thresholds = find_threshold(state, i, big_data)
+		thresholds = find_threshold(state, i)
 		for j in thresholds:
 			if not ([i,j] in feature_list):
 				condition = Condition(Feature=i, Type='<', Threshold=j)
@@ -262,15 +261,8 @@ def find_best_benefit(state, big_data):
 					if (best_benefit < index_benefit):
 						best_benefit = index_benefit
 						best_condition = condition
-				condition = Condition(Feature=i, Type='>', Threshold=j)
-				left_state_Y, right_state_Y = get_Y_state(state, condition)
-				if left_state_Y.shape[0] != 0 and right_state_Y.shape[0] != 0:
-					left_data = C(left_state_Y)
-					right_data = C(right_state_Y)
-					index_benefit = B(big_data, left_data, right_data)
-					if (best_benefit < index_benefit):
-						best_benefit = index_benefit
-						best_condition = condition
+	end = time.time()
+	d_print("Training took: " + str(end - start) + " seconds")
 	return best_condition
 
 def train(root, type, depth_cap=maximum_depth, plot=False, proc=False):
