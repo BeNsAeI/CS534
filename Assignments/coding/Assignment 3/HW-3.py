@@ -263,6 +263,7 @@ def find_best_benefit(state, big_data):
 						best_benefit = index_benefit
 						best_condition = condition
 				condition = Condition(Feature=i, Type='>', Threshold=j)
+				left_state_Y, right_state_Y = get_Y_state(state, condition)
 				if left_state_Y.shape[0] != 0 and right_state_Y.shape[0] != 0:
 					left_data = C(left_state_Y)
 					right_data = C(right_state_Y)
@@ -312,9 +313,9 @@ def walk(node, row, true_label):
 				return walk(node.Right, row, true_label)
 		else:
 			if row[node.Left.Condition.Feature] >= node.Left.Condition.Threshold:
-				return walk(node.Right, row, true_label)
-			else:
 				return walk(node.Left, row, true_label)
+			else:
+				return walk(node.Right, row, true_label)
 	d_print("None of the conditions in walk were satisfied.")
 	exit(1)
 
