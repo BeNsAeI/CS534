@@ -25,6 +25,12 @@ feature_list = []
 RF_tree_count = 3
 RF_feature_count = 10
 
+# Result
+## myResult = Result(1, 0.5, 0.7)
+## Or
+## myResult = Result(ID=1, TA=0.5, VA=0.7)
+Result = namedtuple("Result", "ID TA VA") 
+
 # State
 ## myState = State(X, Y)
 ## Or
@@ -409,7 +415,9 @@ def train_RF(root, depth_cap=maximum_depth, local_tree_count=RF_tree_count, plot
 	print("Validation accuracy is: "+ str(valid_accuracy) + ".")
 	if proc:
 		global multi_output
-		multi_output.put([local_tree_count,train_accuracy, valid_accuracy])
+		data_point = Result(ID=local_tree_count, TA=train_accuracy, VA=valid_accuracy)
+		d_print(data_point)
+		multi_output.put(data_point)
 	return train_accuracy, valid_accuracy
 
 def main():
@@ -475,11 +483,17 @@ def main():
 									args=(root, maximum_depth_rf, j, PLOT,MULTIPROC))
 				pool.close()
 				pool.join()
-				results = multi_output.get()
+				global multi_output
+				results = []
+				results.append(multi_output.get())
 				results = sorted(results)
+				#d_print(results)
 				for k in results:
-					train_accuracies.append(k[1])
-					valid_accuracies.append(k[2])
+					#d_print(k)
+					#d_print(k.TA)
+					#d_print(k.VA)
+					train_accuracies.append(k.TA)
+					valid_accuracies.append(k.VA)
 			else:
 				for j in [1, 2, 5, 10, 25]: #Number of trees N
 					RF_feature_count = i * 10
