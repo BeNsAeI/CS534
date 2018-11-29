@@ -390,8 +390,9 @@ def train_RF(root, depth_cap=maximum_depth, local_tree_count=RF_tree_count, plot
 			d_print("Training " + str(i+1) + "rd tree")
 		else:
 			d_print("Training " + str(i+1) + "th tree")
-		root_data = C(root.State.Y)
-		root_state = State(X=root.State.X, Y=root.State.Y)
+		X, Y = sample(root.State.X, root.State.Y)
+		root_data = C(Y) #root.State.Y)
+		root_state = State(X=X, Y=Y) #State(X=root.State.X, Y=root.State.Y)
 		tmp_root = Node(Data=root_data, State=root_state, Condition=None, Parent=None, Left=None, Right=None)
 		roots.append(tmp_root)
 		roots[i] = train(roots[i], depth_cap, random=True, plot=plot, proc=proc)
@@ -439,14 +440,14 @@ def main():
 	x_train, y_train = get_data(path+training+format, test=False)
 	global feature_list
 	# Part 1: Train Trees with depth varying from 1 to 32 for plotting purposes
-	'''d_print("Producing root data")
+	d_print("Producing root data")
 	root_data = C(y_train)
 	d_print("Generating State")
 	root_state = State(X=x_train, Y=y_train)
 	d_print("Initiating the Node")
 	root = Node(Data=root_data, State=root_state, Condition=None, Parent=None, Left=None, Right=None)
 	d_print("Root: "+str(root))
-	if PLOT:
+	'''if PLOT:
 		train_accuracies = []
 		valid_accuracies = []
 		for i in range(0,21):
@@ -476,14 +477,6 @@ def main():
 				RF_feature_count = i * 10
 				pool = mp.Pool()
 				for j in [1, 2, 5, 10, 25]:
-					x_, y_ = sample(x_train, y_train)
-					d_print("Producing root data")
-					root_data = C(y_)
-					d_print("Generating State")
-					root_state = State(X=x_, Y=y_)
-					d_print("Initiating the Node")
-					root = Node(Data=root_data, State=root_state, Condition=None, Parent=None, Left=None, Right=None)
-					#d_print("Root: "+str(root))
 					pool.apply_async(train_RF,
 									args=(root, maximum_depth_rf, j, PLOT,MULTIPROC))
 				pool.close()
@@ -493,25 +486,12 @@ def main():
 				for j in [1, 2, 5, 10, 25]:
 					results.append(multi_output.get())
 				results = sorted(results)
-				#d_print(results)
 				for k in results:
-				#	d_print(k)
-				#	d_print(k.TA)
-				#	d_print(k.VA)
 					train_accuracies.append(k.TA)
 					valid_accuracies.append(k.VA)
-				#exit(1)
 			else:
 				for j in [1, 2, 5, 10, 25]: #Number of trees N
 					RF_feature_count = i * 10
-					x_, y_ = sample(x_train, y_train)
-					d_print("Producing root data")
-					root_data = C(y_)
-					d_print("Generating State")
-					root_state = State(X=x_, Y=y_)
-					d_print("Initiating the Node")
-					root = Node(Data=root_data, State=root_state, Condition=None, Parent=None, Left=None, Right=None)
-					#d_print("Root: "+str(root))
 					train_accuracy, valid_accuracy = train_RF(root,
 													depth_cap=maximum_depth_rf,
 													local_tree_count=j,
@@ -524,14 +504,6 @@ def main():
 			number_string = str(i) + '1'
 			plot_accuracies(train_accuracies, valid_accuracies, number_string)
 	else:
-		x_, y_ = sample(x_train, y_train)
-		d_print("Producing root data")
-		root_data = C(y_)
-		d_print("Generating State")
-		root_state = State(X=x_, Y=y_)
-		d_print("Initiating the Node")
-		root = Node(Data=root_data, State=root_state, Condition=None, Parent=None, Left=None, Right=None)
-		d_print("Root: "+str(root))
 		start = time.time()
 		train_RF(root, depth_cap=maximum_depth_rf,
 				local_tree_count=RF_tree_count,
