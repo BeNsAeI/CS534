@@ -263,19 +263,8 @@ def find_best_benefit(state, big_data, random=False):
 	best_condition = None
 	max_index = None
 	if random:
-		max_index = np.random.choice(np.arange(state.X.shape[1]), size=10, replace=False)
-		'''
-		rand_s = randint(0, state.X.shape[1] - 51)
-		rand_e = randint(rand_s + 50, state.X.shape[1]-1)
-	#	d_print(rand_s)
-	#	d_print(rand_e)
 		global RF_feature_count
-		rand_c = RF_feature_count #randint(0, rand_e - rand_s)
-		max_index = np.random.random_integers(rand_s, rand_e, rand_c )
-		'''
-	#	d_print(rand_c)
-	#	d_print(max_index)
-	#	exit(1)
+		max_index = np.random.choice(np.arange(state.X.shape[1]), size=RF_feature_count, replace=False)
 	else:
 		max_index = np.arange(0,state.X.shape[1])
 
