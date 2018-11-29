@@ -21,7 +21,7 @@ maximum_depth = 20
 maximum_depth_rf = 9
 node_count = 0
 feature_list = []
-RF_count = 3
+RF_tree_count = 3
 RF_feature_count = 10
 
 # State
@@ -365,11 +365,11 @@ def train_RF(root, depth_cap=maximum_depth, plot=False, proc=False):
 	global feature_list
 	global node_count
 	feature_list = []
-	for i in range(0,RF_count):
+	for i in range(0,RF_tree_count):
 		node_count = 0
-		if (i+1) % 10 == 1:
+		if (i+1) % 10 == 1 and (i+1) != 11:
 			d_print("Training " + str(i+1) + "st tree")
-		elif (i+1) % 10 == 2:
+		elif (i+1) % 10 == 2 and (i+1) != 12:
 			d_print("Training " + str(i+1) + "nd tree")
 		elif (i+1) % 10 == 3 and (i+1) != 13:
 			d_print("Training " + str(i+1) + "rd tree")
