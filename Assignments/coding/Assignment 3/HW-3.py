@@ -485,15 +485,17 @@ def main():
 				pool.join()
 				global multi_output
 				results = []
-				results.append(multi_output.get())
+				for j in [1, 2, 5, 10, 25]:
+					results.append(multi_output.get())
 				results = sorted(results)
 				#d_print(results)
 				for k in results:
-					#d_print(k)
-					#d_print(k.TA)
-					#d_print(k.VA)
+				#	d_print(k)
+				#	d_print(k.TA)
+				#	d_print(k.VA)
 					train_accuracies.append(k.TA)
 					valid_accuracies.append(k.VA)
+				#exit(1)
 			else:
 				for j in [1, 2, 5, 10, 25]: #Number of trees N
 					RF_feature_count = i * 10
