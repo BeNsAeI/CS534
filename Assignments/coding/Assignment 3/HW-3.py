@@ -247,11 +247,16 @@ def find_best_benefit(state, big_data, random=False):
 	best_condition = None
 	max_index = None
 	if random:
-		rand_s = randint(0, state.X.shape[1] - 21)
-		rand_e = randint(rand_s + 20, state.X.shape[1]-1)
+		rand_s = randint(0, state.X.shape[1] - 51)
+		rand_e = randint(rand_s + 50, state.X.shape[1]-1)
+	#	d_print(rand_s)
+	#	d_print(rand_e)
 		global RF_feature_count
 		rand_c = RF_feature_count #randint(0, rand_e - rand_s)
 		max_index = np.random.random_integers(rand_s, rand_e, rand_c )
+	#	d_print(rand_c)
+	#	d_print(max_index)
+	#	exit(1)
 	else:
 		max_index = np.arange(0,state.X.shape[1])
 
@@ -329,13 +334,15 @@ def validate(x_validate, y_validate, root, plot=PLOT, proc=MULTIPROC):
 def validate_rf(x_validate, y_validate, roots, plot=PLOT, proc=MULTIPROC):
 	true_label = None
 	correct_total = 0
-	predictions = []
 	for true_label, row in zip(y_validate,x_validate):
+		predictions = 0
 		for i in roots:
-			predictions.append(walk(i, row, true_label))
-		prediction = max(set(predictions), key = predictions.count)
-		if np.sign(true_label) == np.sign(prediction):
+			predictions += walk(i, row, true_label)
+		if predictions == 0:
+			predictions += 1
+		if np.sign(true_label) == np.sign(predictions):
 			correct_total += 1
+	#	d_print(str(predictions) + ", " + str(true_label) + ", " + str(np.sign(true_label) == np.sign(predictions)))
 	return (float(correct_total) / float(y_validate.shape[0]))
 
 def delete_tree(root):
@@ -380,10 +387,10 @@ def train_RF(root, depth_cap=maximum_depth, plot=False, proc=False):
 		tmp_root = Node(Data=root_data, State=root_state, Condition=None, Parent=None, Left=None, Right=None)
 		roots.append(tmp_root)
 		roots[i] = train(roots[i], depth_cap, random=True, plot=plot, proc=proc)
-	#for i in roots:
+	for i in roots:
 		#print_tree(i)
-	#	accuracy = validate(root.State.X, root.State.Y, i, plot=plot, proc=proc)
-	#	d_print("Accuracy is: "+ str(accuracy) + ".")
+		accuracy = validate(root.State.X, root.State.Y, i, plot=plot, proc=proc)
+		d_print("Indovidual tree accuracy is: "+ str(accuracy) + ".")
 	x_validate, y_validate = get_data(path+validation+format, test=False)
 	accuracy = validate_rf(root.State.X, root.State.Y, roots, plot=plot, proc=proc)
 	print("Train accuracy is: "+ str(accuracy) + ".")
