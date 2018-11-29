@@ -186,6 +186,16 @@ def B(big_data, small_left_data, small_right_data):
 	p_r = P(big_pos_c, big_neg_c, small_right_pos_c, small_right_neg_c)
 	return U_A - p_l * U_AL - p_r * U_AR
 
+def plot_accuracies(train_accuracies, valid_accuracies,iter):
+	import matplotlib.pyplot as plt
+	plt.figure()
+	plt.plot(range(1, len(train_accuracies)+1), train_accuracies)
+	plt.plot(range(1, len(valid_accuracies)+1), valid_accuracies)
+	plt.gca().legend(('Training Accuracy','Validation Accuracy'))
+	#plt.show()
+	plt.savefig('figure-'+ iter + '.png');
+                            
+
 def print_tree(root, count=0):
 	tab = ""
 	for i in range(0,count):
@@ -359,11 +369,11 @@ def train_DT(root, depth_cap=maximum_depth, plot=False, proc=False):
 	d_print("Reading in validation Data...")
 	# plot the tree:
 	x_validate, y_validate = get_data(path+validation+format, test=False)
-	accuracy = validate(root.State.X, root.State.Y, root, plot=PLOT, proc=MULTIPROC)
-	print("Training accuracy is: " + str(accuracy) + ".")
-	accuracy = validate(x_validate, y_validate, root, plot=PLOT, proc=MULTIPROC)
-	print("Validation accuracy is: " + str(accuracy) + ".")
-	return root
+	train_accuracy = validate(root.State.X, root.State.Y, root, plot=PLOT, proc=MULTIPROC)
+	print("Training accuracy is: " + str(train_accuracy) + ".")
+	valid_accuracy = validate(x_validate, y_validate, root, plot=PLOT, proc=MULTIPROC)
+	print("Validation accuracy is: " + str(valid_accuracy) + ".")
+	return train_accuracy, valid_accuracy
 
 def train_RF(root, depth_cap=maximum_depth, plot=False, proc=False):
 	roots = []
@@ -426,13 +436,26 @@ def main():
 	root = Node(Data=root_data, State=root_state, Condition=None, Parent=None, Left=None, Right=None)
 	d_print("Root: "+str(root))
 	global feature_list
-	# Part 1: Train a Tree
-	start = time.time()
-#	root = train_DT(root, depth_cap=maximum_depth, plot=PLOT, proc=MULTIPROC)
-	end = time.time()
-	d_print("Training took: " + str(end - start) + " seconds")
+	# Part 1: Train Trees with depth varying from 1 to 32 for plotting purposes
+	train_accuracies = []
+	valid_accuracies = []
+	if PLOT:
+		for i in range(0,6):
+			start = time.time()
+			train_accuracy, valid_accuracy = train_DT(root, depth_cap=pow(2,i), plot=PLOT, proc=MULTIPROC)
+			train_accuracies.append(train_accuracy)
+			valid_accuracies.append(valid_accuracy)
+			d_print([train_accuracies, valid_accuracies])
+			end = time.time()
+			d_print("Training took: " + str(end - start) + " seconds")
+		plot_accuracies(train_accuracies, valid_accuracies,'1')
+	else:
+		start = time.time()
+		train_accuracy, valid_accuracy = train_DT(root, depth_cap=maximum_depth, plot=PLOT, proc=MULTIPROC)
+		end = time.time()
+		d_print("Training took: " + str(end - start) + " seconds")
 	# Part 2: Random Forest
-	train_RF(root, depth_cap=maximum_depth_rf, plot=PLOT, proc=MULTIPROC)
+#	train_RF(root, depth_cap=maximum_depth_rf, plot=PLOT, proc=MULTIPROC)
 	# Part 3: AdaBoost
 	#root = train(root, "Adaboost", depth_cap=maximum_depth, plot=PLOT, proc=MULTIPROC)
 	#cleaning up
