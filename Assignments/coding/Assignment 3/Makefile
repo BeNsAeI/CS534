@@ -7,7 +7,7 @@ flip_multi:
 plot:
 	python3 HW-3.py --plot
 debug:
-	python3 HW-3.py --debug --plot
+	python3 HW-3.py --debug --plot --multi_process
 verbose:
 	python3 HW-3.py --verbose --plot --multi_process
 multi_process:

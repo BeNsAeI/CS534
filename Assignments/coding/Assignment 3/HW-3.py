@@ -16,6 +16,7 @@ DEBUG = False
 VERBOSE = False
 PLOT = False
 MULTIPROC = False
+multi_output = mp.Queue()
 threshol_grain = 1
 maximum_depth = 20
 maximum_depth_rf = 9
@@ -375,14 +376,14 @@ def train_DT(root, depth_cap=maximum_depth, plot=False, proc=False):
 	print("Validation accuracy is: " + str(valid_accuracy) + ".")
 	return train_accuracy, valid_accuracy
 
-def train_RF(root, depth_cap=maximum_depth, plot=False, proc=False):
+def train_RF(root, depth_cap=maximum_depth, local_tree_count=RF_tree_count, plot=False, proc=False):
 	roots = []
 	x_train = root.State.X
 	y_train = root.State.Y
 	global feature_list
 	global node_count
 	feature_list = []
-	for i in range(0,RF_tree_count):
+	for i in range(0,local_tree_count):
 		node_count = 0
 		if (i+1) % 10 == 1 and (i+1) != 11:
 			d_print("Training " + str(i+1) + "st tree")
@@ -406,6 +407,9 @@ def train_RF(root, depth_cap=maximum_depth, plot=False, proc=False):
 	print("Train accuracy is: "+ str(train_accuracy) + ".")
 	valid_accuracy = validate_rf(x_validate, y_validate, roots, plot=plot, proc=proc)
 	print("Validation accuracy is: "+ str(valid_accuracy) + ".")
+	if proc:
+		global multi_output
+		multi_output.put([local_tree_count,train_accuracy, valid_accuracy])
 	return train_accuracy, valid_accuracy
 
 def main():
@@ -457,29 +461,50 @@ def main():
 	'''
 	# Part 2: Random Forest
 	if PLOT:
+		global RF_feature_count
 		for i in range(1,6): #Number of features allowed M
+			RF_feature_count = i + 10
 			train_accuracies = []
 			valid_accuracies = []
 			start = time.time()
-			for j in [1, 2, 5, 10, 25]: #Number of trees N
-				global RF_feature_count
-				global RF_tree_count
+			if MULTIPROC:
 				RF_feature_count = i * 10
-				RF_tree_count = j
-				train_accuracy, valid_accuracy = train_RF(root, depth_cap=maximum_depth_rf, plot=PLOT, proc=MULTIPROC)
-				train_accuracies.append(train_accuracy)
-				valid_accuracies.append(valid_accuracy)
+				pool = mp.Pool()
+				for j in [1, 2, 5, 10, 25]:
+					pool.apply_async(train_RF,
+									args=(root, maximum_depth_rf, j, PLOT,MULTIPROC))
+				pool.close()
+				pool.join()
+				results = multi_output.get()
+				results = sorted(results)
+				for k in results:
+					train_accuracies.append(k[1])
+					valid_accuracies.append(k[2])
+			else:
+				for j in [1, 2, 5, 10, 25]: #Number of trees N
+					RF_feature_count = i * 10
+					train_accuracy, valid_accuracy = train_RF(root,
+													depth_cap=maximum_depth_rf,
+													local_tree_count=j,
+													plot=PLOT,
+													proc=MULTIPROC)
+					train_accuracies.append(train_accuracy)
+					valid_accuracies.append(valid_accuracy)
 			end = time.time()
 			d_print("Training took: " + str(end - start) + " seconds")
-			plot_accuracies(train_accuracies, valid_accuracies,str(i+1))
+			number_string = str(i) + '1'
+			plot_accuracies(train_accuracies, valid_accuracies, number_string)
 	else:
 		start = time.time()
-		train_RF(root, depth_cap=maximum_depth_rf, plot=PLOT, proc=MULTIPROC)
+		train_RF(root, depth_cap=maximum_depth_rf,
+				local_tree_count=RF_tree_count,
+				plot=PLOT,
+				proc=MULTIPROC)
 		end = time.time()
 		d_print("Training took: " + str(end - start) + " seconds")
-
+	
 	# Part 3: AdaBoost
-	#root = train(root, "Adaboost", depth_cap=maximum_depth, plot=PLOT, proc=MULTIPROC)
+	
 	#cleaning up
 	d_print("\n___\nCleaning up ...")
 	del root_data
