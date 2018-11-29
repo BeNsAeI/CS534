@@ -440,9 +440,9 @@ def main():
 	'''if PLOT:
 		train_accuracies = []
 		valid_accuracies = []
-		for i in range(0,6):
+		for i in range(0,21):
 			start = time.time()
-			train_accuracy, valid_accuracy = train_DT(root, depth_cap=pow(2,i), plot=PLOT, proc=MULTIPROC)
+			train_accuracy, valid_accuracy = train_DT(root, depth_cap=i, plot=PLOT, proc=MULTIPROC)
 			train_accuracies.append(train_accuracy)
 			valid_accuracies.append(valid_accuracy)
 			d_print([train_accuracies, valid_accuracies])
@@ -460,6 +460,7 @@ def main():
 		for i in range(1,6): #Number of features allowed M
 			train_accuracies = []
 			valid_accuracies = []
+			start = time.time()
 			for j in [1, 2, 5, 10, 25]: #Number of trees N
 				global RF_feature_count
 				global RF_tree_count
@@ -468,10 +469,14 @@ def main():
 				train_accuracy, valid_accuracy = train_RF(root, depth_cap=maximum_depth_rf, plot=PLOT, proc=MULTIPROC)
 				train_accuracies.append(train_accuracy)
 				valid_accuracies.append(valid_accuracy)
+			end = time.time()
 			d_print("Training took: " + str(end - start) + " seconds")
 			plot_accuracies(train_accuracies, valid_accuracies,str(i+1))
 	else:
+		start = time.time()
 		train_RF(root, depth_cap=maximum_depth_rf, plot=PLOT, proc=MULTIPROC)
+		end = time.time()
+		d_print("Training took: " + str(end - start) + " seconds")
 
 	# Part 3: AdaBoost
 	#root = train(root, "Adaboost", depth_cap=maximum_depth, plot=PLOT, proc=MULTIPROC)
