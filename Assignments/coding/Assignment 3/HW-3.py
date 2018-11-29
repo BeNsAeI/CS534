@@ -20,7 +20,7 @@ threshol_grain = 1
 maximum_depth = 20
 node_count = 0
 feature_list = []
-RF_count = 25
+RF_count = 3
 
 # State
 ## myState = State(X, Y)
@@ -243,17 +243,12 @@ def find_best_benefit(state, big_data, random=False):
 	best_benefit = -np.inf
 	index_benefit = -np.inf
 	best_condition = None
-	thresh_count = 0
-	#start = time.time()
 	max_index = None
 	if random:
-		rand_s = randint(0, state.X.shape[1] - 20)
-		rand_e = randint(rand_s + 20, state.X.shape[1])
+		rand_s = randint(0, state.X.shape[1] - 21)
+		rand_e = randint(rand_s + 20, state.X.shape[1]-1)
 		rand_c = randint(0, rand_e - rand_s)
 		max_index = np.random.random_integers(rand_s, rand_e, rand_c )
-		#d_print(str(rand_s) + ", " + str(rand_e) + ", " + str(rand_c))
-		#d_print(max_index)
-		#exit(1)
 	else:
 		max_index = np.arange(0,state.X.shape[1])
 
@@ -262,8 +257,6 @@ def find_best_benefit(state, big_data, random=False):
 		feature = np.vstack((feature, state.Y)).T
 		feature = feature[feature[:, 0].argsort()]
 		thresholds = find_threshold(state, i)
-#		thresh_count += len(thresholds)
-		#start = time.time()
 		for j in thresholds:
 			condition = Condition(Feature=i, Type='<', Threshold=j)
 			left_data, right_data = get_Y_state(state, condition)
@@ -271,11 +264,6 @@ def find_best_benefit(state, big_data, random=False):
 			if (best_benefit < index_benefit):
 				best_benefit = index_benefit
 				best_condition = condition
-#	d_print(thresh_count)
-#	exit(1)
-		#end = time.time()
-		#if best_condition != None:
-		#	d_print("Training " + str([i,best_condition.Threshold]) + " took: " + str(end - start) + " seconds")
 	return best_condition
 
 def train(root,depth_cap=maximum_depth, random=False, plot=False, proc=False):
@@ -360,33 +348,14 @@ def train_RF(root, depth_cap=maximum_depth, plot=False, proc=False):
 	global feature_list
 	feature_list = []
 	for i in range(0,RF_count):
-		#s = randint(0, root.State.X.shape[0]/2)
-		#e = randint(s, root.State.X.shape[0]/2)+(root.State.X.shape[0]/2)
-		#d_print(s)
-		#d_print(e)
-
-		#start = np.arange(0,s)
-		#end = np.arange(e,x_train.shape[0])
-		#d_print(start)
-		#d_print(end)
-
-		#sub_x_train = root.State.X
-		#sub_x_train = np.delete(sub_x_train, end , axis=0)
-		#sub_x_train = np.delete(sub_x_train, start , axis=0)
-		#sub_y_train = root.State.Y
-		#sub_y_train = np.delete(sub_y_train, end , axis=0)
-		#sub_y_train = np.delete(sub_y_train, start , axis=0)
-		
 		root_data = C(root.State.Y)
 		root_state = State(X=root.State.X, Y=root.State.Y)
-
 		tmp_root = Node(Data=root_data, State=root_state, Condition=None, Parent=None, Left=None, Right=None)
 		roots.append(tmp_root)
-		#d_print(roots[i])
-
 		roots[i] = train(roots[i], depth_cap, random=True, plot=plot, proc=proc)
-	#for i in roots:
-		
+	for i in roots:
+		accuracy = validate(root.State.X, root.State.Y, i, plot=plot, proc=proc)
+		d_print("Accuracy is: "+ str(accuracy) + ".")
 	return root
 
 def main():
@@ -423,7 +392,7 @@ def main():
 	end = time.time()
 	d_print("Training took: " + str(end - start) + " seconds")
 	# Part 2: Random Forest
-	train_RF(root, depth_cap=maximum_depth, plot=PLOT, proc=MULTIPROC)
+	train_RF(root, depth_cap=9, plot=PLOT, proc=MULTIPROC)
 	# Part 3: AdaBoost
 	#root = train(root, "Adaboost", depth_cap=maximum_depth, plot=PLOT, proc=MULTIPROC)
 	#cleaning up
