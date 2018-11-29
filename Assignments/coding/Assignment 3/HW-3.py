@@ -6,7 +6,7 @@ import numpy as np
 import multiprocessing as mp
 from subprocess import call
 from collections import namedtuple
-
+from random import randint
 
 path = "Sources/"
 training = "pa3_train_reduced"
@@ -20,6 +20,7 @@ threshol_grain = 1
 maximum_depth = 20
 node_count = 0
 feature_list = []
+RF_count = 25
 
 # State
 ## myState = State(X, Y)
@@ -71,9 +72,9 @@ def get_Y_state(state, condition):
 	feature = state.X[:, condition.Feature]
 	feature = np.vstack((np.arange(feature.shape[0]), feature)).T
 	if condition.Type == '<':
-		delete_Y_left =  (feature[feature[:,1] <= condition.Threshold])[:, 0]
-	else:
 		delete_Y_left =  (feature[feature[:,1] > condition.Threshold])[:, 0]
+	else:
+		delete_Y_left =  (feature[feature[:,1] <= condition.Threshold])[:, 0]
 	left_Y = np.delete(left_Y, delete_Y_left , axis=0)
 	count_state = C(state.Y)
 	count_left = C(left_Y)
@@ -237,18 +238,32 @@ def find_threshold(state, feature_index):
 				thresholds.append(threshold)
 	return thresholds
 
-def find_best_benefit(state, big_data):
+def find_best_benefit(state, big_data, random=False):
 	global feature_list
 	best_benefit = -np.inf
 	index_benefit = -np.inf
 	best_condition = None
+	thresh_count = 0
 	#start = time.time()
-	for i in range(0,state.X.shape[1]):
+	max_index = None
+	if random:
+		rand_s = randint(0, state.X.shape[1] - 20)
+		rand_e = randint(rand_s + 20, state.X.shape[1])
+		rand_c = randint(0, rand_e - rand_s)
+		max_index = np.random.random_integers(rand_s, rand_e, rand_c )
+		#d_print(str(rand_s) + ", " + str(rand_e) + ", " + str(rand_c))
+		#d_print(max_index)
+		#exit(1)
+	else:
+		max_index = np.arange(0,state.X.shape[1])
+
+	for i in max_index:
 		feature = state.X[:, i]
 		feature = np.vstack((feature, state.Y)).T
 		feature = feature[feature[:, 0].argsort()]
 		thresholds = find_threshold(state, i)
-		start = time.time()
+#		thresh_count += len(thresholds)
+		#start = time.time()
 		for j in thresholds:
 			condition = Condition(Feature=i, Type='<', Threshold=j)
 			left_data, right_data = get_Y_state(state, condition)
@@ -256,36 +271,37 @@ def find_best_benefit(state, big_data):
 			if (best_benefit < index_benefit):
 				best_benefit = index_benefit
 				best_condition = condition
-		end = time.time()
-		if best_condition != None:
-			d_print("Training " + str([i,best_condition.Threshold]) + " took: " + str(end - start) + " seconds")
+#	d_print(thresh_count)
+#	exit(1)
+		#end = time.time()
+		#if best_condition != None:
+		#	d_print("Training " + str([i,best_condition.Threshold]) + " took: " + str(end - start) + " seconds")
 	return best_condition
 
-def train(root, type, depth_cap=maximum_depth, plot=False, proc=False):
+def train(root,depth_cap=maximum_depth, random=False, plot=False, proc=False):
 	if depth_cap == maximum_depth:
-		d_print("\n___\nTraining "+ type+". Max depth: "+ str(depth_cap))
+		d_print("\n___\nTraining. Max depth: "+ str(depth_cap))
 	global node_count
 	global feature_list
-	if type == "Decision Tree" and depth_cap > 0:
-		big_data = C(root.State.Y)
-		best_condition = find_best_benefit(root.State,
-			big_data)
-		if best_condition != None:
-			feature_list.append([best_condition.Feature,best_condition.Threshold])
-			root = split(root, best_condition)
-			node_count += 1
-			d_print("Node "+ str(maximum_depth - depth_cap) + ": " + str(node_count) + " has " + str(best_condition))
-
-			left_node = train(root.Left, "Decision Tree", depth_cap=depth_cap - 1, plot=plot)
-			right_node= train(root.Right,"Decision Tree", depth_cap=depth_cap - 1, plot=plot)
-			root = Node(Data=root.Data,
-				State=root.State,
-				Condition=root.Condition,
-				Parent=root.Parent,
-				Left=left_node,
-				Right=right_node)
-		#d_print(feature_list)
-		return root
+	big_data = C(root.State.Y)
+	best_condition = find_best_benefit(root.State,
+		big_data,
+		random=random)
+	if best_condition != None:
+		feature_list.append([best_condition.Feature,best_condition.Threshold])
+		root = split(root, best_condition)
+		node_count += 1
+		d_print("Node "+ str(maximum_depth - depth_cap) + ": " + str(node_count) + " has " + str(best_condition))
+		left_node = train(root.Left, depth_cap=depth_cap - 1, random=random, plot=plot)
+		right_node= train(root.Right, depth_cap=depth_cap - 1, random=random, plot=plot)
+		root = Node(Data=root.Data,
+			State=root.State,
+			Condition=root.Condition,
+			Parent=root.Parent,
+			Left=left_node,
+			Right=right_node)
+	#d_print(feature_list)
+	return root
 
 def walk(node, row, true_label):
 	if node.Left == None and node.Right == None:
@@ -324,6 +340,55 @@ def delete_tree(root):
 		delete_tree(root.Right)
 	del root
 
+def train_DT(root, depth_cap=maximum_depth, plot=False, proc=False):
+	root = train(root, depth_cap, random=False, plot=plot, proc=proc)
+	# Print the tree:
+	print_tree(root)
+	d_print("Reading in validation Data...")
+	# plot the tree:
+	x_validate, y_validate = get_data(path+validation+format, test=False)
+	accuracy = validate(root.State.X, root.State.Y, root, plot=PLOT, proc=MULTIPROC)
+	d_print("Training accuracy is: " + str(accuracy) + ".")
+	accuracy = validate(x_validate, y_validate, root, plot=PLOT, proc=MULTIPROC)
+	d_print("Validation accuracy is: " + str(accuracy) + ".")
+	return root
+
+def train_RF(root, depth_cap=maximum_depth, plot=False, proc=False):
+	roots = []
+	x_train = root.State.X
+	y_train = root.State.Y
+	global feature_list
+	feature_list = []
+	for i in range(0,RF_count):
+		#s = randint(0, root.State.X.shape[0]/2)
+		#e = randint(s, root.State.X.shape[0]/2)+(root.State.X.shape[0]/2)
+		#d_print(s)
+		#d_print(e)
+
+		#start = np.arange(0,s)
+		#end = np.arange(e,x_train.shape[0])
+		#d_print(start)
+		#d_print(end)
+
+		#sub_x_train = root.State.X
+		#sub_x_train = np.delete(sub_x_train, end , axis=0)
+		#sub_x_train = np.delete(sub_x_train, start , axis=0)
+		#sub_y_train = root.State.Y
+		#sub_y_train = np.delete(sub_y_train, end , axis=0)
+		#sub_y_train = np.delete(sub_y_train, start , axis=0)
+		
+		root_data = C(root.State.Y)
+		root_state = State(X=root.State.X, Y=root.State.Y)
+
+		tmp_root = Node(Data=root_data, State=root_state, Condition=None, Parent=None, Left=None, Right=None)
+		roots.append(tmp_root)
+		#d_print(roots[i])
+
+		roots[i] = train(roots[i], depth_cap, random=True, plot=plot, proc=proc)
+	#for i in roots:
+		
+	return root
+
 def main():
 	#Parsing arguments:
 	parser = argparse.ArgumentParser()
@@ -354,23 +419,13 @@ def main():
 	global feature_list
 	# Part 1: Train a Tree
 	start = time.time()
-	root = train(root, "Decision Tree", depth_cap=maximum_depth, plot=PLOT, proc=MULTIPROC)
+	#root = train_DT(root, depth_cap=maximum_depth, plot=PLOT, proc=MULTIPROC)
 	end = time.time()
-	#d_print("Training took: " + str(end - start) + " seconds")
-	# Print the tree:
-	print_tree(root)
-	d_print("Reading in validation Data...")
-	# plot the tree:
-	x_validate, y_validate = get_data(path+validation+format, test=False)
-	accuracy = validate(x_train, y_train, root, plot=PLOT, proc=MULTIPROC)
-	d_print("Training accuracy is: " + str(accuracy) + ".")
-	accuracy = validate(x_validate, y_validate, root, plot=PLOT, proc=MULTIPROC)
-	d_print("Validation accuracy is: " + str(accuracy) + ".")
 	d_print("Training took: " + str(end - start) + " seconds")
 	# Part 2: Random Forest
-	#train(root, "Random Forest", feature_list, plot=PLOT, proc=MULTIPROC)
+	train_RF(root, depth_cap=maximum_depth, plot=PLOT, proc=MULTIPROC)
 	# Part 3: AdaBoost
-	#train(root, "Adaboost", feature_list, plot=PLOT, proc=MULTIPROC)
+	#root = train(root, "Adaboost", depth_cap=maximum_depth, plot=PLOT, proc=MULTIPROC)
 	#cleaning up
 	d_print("\n___\nCleaning up ...")
 	del root_data
