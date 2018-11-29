@@ -402,11 +402,11 @@ def train_RF(root, depth_cap=maximum_depth, plot=False, proc=False):
 		accuracy = validate(root.State.X, root.State.Y, i, plot=plot, proc=proc)
 		d_print("Indovidual tree accuracy is: "+ str(accuracy) + ".")
 	x_validate, y_validate = get_data(path+validation+format, test=False)
-	accuracy = validate_rf(root.State.X, root.State.Y, roots, plot=plot, proc=proc)
-	print("Train accuracy is: "+ str(accuracy) + ".")
-	accuracy = validate_rf(x_validate, y_validate, roots, plot=plot, proc=proc)
-	print("Validation accuracy is: "+ str(accuracy) + ".")
-	return roots
+	train_accuracy = validate_rf(root.State.X, root.State.Y, roots, plot=plot, proc=proc)
+	print("Train accuracy is: "+ str(train_accuracy) + ".")
+	valid_accuracy = validate_rf(x_validate, y_validate, roots, plot=plot, proc=proc)
+	print("Validation accuracy is: "+ str(valid_accuracy) + ".")
+	return train_accuracy, valid_accuracy
 
 def main():
 	#Parsing arguments:
@@ -437,9 +437,9 @@ def main():
 	d_print("Root: "+str(root))
 	global feature_list
 	# Part 1: Train Trees with depth varying from 1 to 32 for plotting purposes
-	train_accuracies = []
-	valid_accuracies = []
-	if PLOT:
+	'''if PLOT:
+		train_accuracies = []
+		valid_accuracies = []
 		for i in range(0,6):
 			start = time.time()
 			train_accuracy, valid_accuracy = train_DT(root, depth_cap=pow(2,i), plot=PLOT, proc=MULTIPROC)
@@ -454,8 +454,25 @@ def main():
 		train_accuracy, valid_accuracy = train_DT(root, depth_cap=maximum_depth, plot=PLOT, proc=MULTIPROC)
 		end = time.time()
 		d_print("Training took: " + str(end - start) + " seconds")
+	'''
 	# Part 2: Random Forest
-#	train_RF(root, depth_cap=maximum_depth_rf, plot=PLOT, proc=MULTIPROC)
+	if PLOT:
+		for i in range(1,6): #Number of features allowed M
+			train_accuracies = []
+			valid_accuracies = []
+			for j in [1, 2, 5, 10, 25]: #Number of trees N
+				global RF_feature_count
+				global RF_tree_count
+				RF_feature_count = i * 10
+				RF_tree_count = j
+				train_accuracy, valid_accuracy = train_RF(root, depth_cap=maximum_depth_rf, plot=PLOT, proc=MULTIPROC)
+				train_accuracies.append(train_accuracy)
+				valid_accuracies.append(valid_accuracy)
+			d_print("Training took: " + str(end - start) + " seconds")
+			plot_accuracies(train_accuracies, valid_accuracies,str(i+1))
+	else:
+		train_RF(root, depth_cap=maximum_depth_rf, plot=PLOT, proc=MULTIPROC)
+
 	# Part 3: AdaBoost
 	#root = train(root, "Adaboost", depth_cap=maximum_depth, plot=PLOT, proc=MULTIPROC)
 	#cleaning up
