@@ -18,9 +18,11 @@ PLOT = False
 MULTIPROC = False
 threshol_grain = 1
 maximum_depth = 20
+maximum_depth_rf = 9
 node_count = 0
 feature_list = []
 RF_count = 3
+RF_feature_count = 10
 
 # State
 ## myState = State(X, Y)
@@ -247,7 +249,8 @@ def find_best_benefit(state, big_data, random=False):
 	if random:
 		rand_s = randint(0, state.X.shape[1] - 21)
 		rand_e = randint(rand_s + 20, state.X.shape[1]-1)
-		rand_c = randint(0, rand_e - rand_s)
+		global RF_feature_count
+		rand_c = RF_feature_count #randint(0, rand_e - rand_s)
 		max_index = np.random.random_integers(rand_s, rand_e, rand_c )
 	else:
 		max_index = np.arange(0,state.X.shape[1])
@@ -267,6 +270,8 @@ def find_best_benefit(state, big_data, random=False):
 	return best_condition
 
 def train(root,depth_cap=maximum_depth, random=False, plot=False, proc=False):
+	if depth_cap == 0:
+		return root
 	if depth_cap == maximum_depth:
 		d_print("\n___\nTraining. Max depth: "+ str(depth_cap))
 	global node_count
@@ -321,6 +326,18 @@ def validate(x_validate, y_validate, root, plot=PLOT, proc=MULTIPROC):
 			correct_total += 1
 	return (float(correct_total) / float(y_validate.shape[0]))
 
+def validate_rf(x_validate, y_validate, roots, plot=PLOT, proc=MULTIPROC):
+	true_label = None
+	correct_total = 0
+	predictions = []
+	for true_label, row in zip(y_validate,x_validate):
+		for i in roots:
+			predictions.append(walk(i, row, true_label))
+		prediction = max(set(predictions), key = predictions.count)
+		if np.sign(true_label) == np.sign(prediction):
+			correct_total += 1
+	return (float(correct_total) / float(y_validate.shape[0]))
+
 def delete_tree(root):
 	if root.Left != None:
 		delete_tree(root.Left)
@@ -336,9 +353,9 @@ def train_DT(root, depth_cap=maximum_depth, plot=False, proc=False):
 	# plot the tree:
 	x_validate, y_validate = get_data(path+validation+format, test=False)
 	accuracy = validate(root.State.X, root.State.Y, root, plot=PLOT, proc=MULTIPROC)
-	d_print("Training accuracy is: " + str(accuracy) + ".")
+	print("Training accuracy is: " + str(accuracy) + ".")
 	accuracy = validate(x_validate, y_validate, root, plot=PLOT, proc=MULTIPROC)
-	d_print("Validation accuracy is: " + str(accuracy) + ".")
+	print("Validation accuracy is: " + str(accuracy) + ".")
 	return root
 
 def train_RF(root, depth_cap=maximum_depth, plot=False, proc=False):
@@ -346,17 +363,33 @@ def train_RF(root, depth_cap=maximum_depth, plot=False, proc=False):
 	x_train = root.State.X
 	y_train = root.State.Y
 	global feature_list
+	global node_count
 	feature_list = []
 	for i in range(0,RF_count):
+		node_count = 0
+		if (i+1) % 10 == 1:
+			d_print("Training " + str(i+1) + "st tree")
+		elif (i+1) % 10 == 2:
+			d_print("Training " + str(i+1) + "nd tree")
+		elif (i+1) % 10 == 3 and (i+1) != 13:
+			d_print("Training " + str(i+1) + "rd tree")
+		else:
+			d_print("Training " + str(i+1) + "th tree")
 		root_data = C(root.State.Y)
 		root_state = State(X=root.State.X, Y=root.State.Y)
 		tmp_root = Node(Data=root_data, State=root_state, Condition=None, Parent=None, Left=None, Right=None)
 		roots.append(tmp_root)
 		roots[i] = train(roots[i], depth_cap, random=True, plot=plot, proc=proc)
-	for i in roots:
-		accuracy = validate(root.State.X, root.State.Y, i, plot=plot, proc=proc)
-		d_print("Accuracy is: "+ str(accuracy) + ".")
-	return root
+	#for i in roots:
+		#print_tree(i)
+	#	accuracy = validate(root.State.X, root.State.Y, i, plot=plot, proc=proc)
+	#	d_print("Accuracy is: "+ str(accuracy) + ".")
+	x_validate, y_validate = get_data(path+validation+format, test=False)
+	accuracy = validate_rf(root.State.X, root.State.Y, roots, plot=plot, proc=proc)
+	print("Train accuracy is: "+ str(accuracy) + ".")
+	accuracy = validate_rf(x_validate, y_validate, roots, plot=plot, proc=proc)
+	print("Validation accuracy is: "+ str(accuracy) + ".")
+	return roots
 
 def main():
 	#Parsing arguments:
@@ -388,11 +421,11 @@ def main():
 	global feature_list
 	# Part 1: Train a Tree
 	start = time.time()
-	#root = train_DT(root, depth_cap=maximum_depth, plot=PLOT, proc=MULTIPROC)
+#	root = train_DT(root, depth_cap=maximum_depth, plot=PLOT, proc=MULTIPROC)
 	end = time.time()
 	d_print("Training took: " + str(end - start) + " seconds")
 	# Part 2: Random Forest
-	train_RF(root, depth_cap=9, plot=PLOT, proc=MULTIPROC)
+	train_RF(root, depth_cap=maximum_depth_rf, plot=PLOT, proc=MULTIPROC)
 	# Part 3: AdaBoost
 	#root = train(root, "Adaboost", depth_cap=maximum_depth, plot=PLOT, proc=MULTIPROC)
 	#cleaning up
