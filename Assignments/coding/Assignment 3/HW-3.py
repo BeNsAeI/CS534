@@ -447,7 +447,7 @@ def main():
 	d_print("Initiating the Node")
 	root = Node(Data=root_data, State=root_state, Condition=None, Parent=None, Left=None, Right=None)
 	d_print("Root: "+str(root))
-	'''if PLOT:
+	if PLOT:
 		train_accuracies = []
 		valid_accuracies = []
 		for i in range(0,21):
@@ -464,7 +464,7 @@ def main():
 		train_accuracy, valid_accuracy = train_DT(root, depth_cap=maximum_depth, plot=PLOT, proc=MULTIPROC)
 		end = time.time()
 		d_print("Training took: " + str(end - start) + " seconds")
-	'''
+	
 	# Part 2: Random Forest
 	if PLOT:
 		global RF_feature_count
