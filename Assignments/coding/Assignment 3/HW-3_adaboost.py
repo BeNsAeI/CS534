@@ -298,7 +298,6 @@ def train(root,depth_cap=maximum_depth, random=False, plot=False, proc=False):
         feature_list.append([best_condition.Feature,best_condition.Threshold])
         root = split(root, best_condition)
         node_count += 1
-        d_print("Node "+ str(maximum_depth - depth_cap) + ": " + str(node_count) + " has " + str(best_condition))
         left_node = train(root.Left, depth_cap=depth_cap - 1, random=random, plot=plot)
         right_node= train(root.Right, depth_cap=depth_cap - 1, random=random, plot=plot)
         root = Node(Data=root.Data,
@@ -330,94 +329,12 @@ def walk(node, row, true_label):
     d_print("None of the conditions in walk were satisfied.")
     exit(1)
 
-def validate(x_validate, y_validate, root, plot=PLOT, proc=MULTIPROC):
-    # Get the tree
-    true_label = None
-    correct_total = 0
-    for true_label, row in zip(y_validate,x_validate):
-        prediction = walk(root, row, true_label)
-        if np.sign(true_label) == np.sign(prediction):
-            correct_total += 1
-    return (float(correct_total) / float(y_validate.shape[0]))
-
-def validate_rf(x_validate, y_validate, roots, plot=PLOT, proc=MULTIPROC):
-    true_label = None
-    correct_total = 0
-    for true_label, row in zip(y_validate,x_validate):
-        predictions = 0
-        for i in roots:
-            predictions += walk(i, row, true_label)
-        if predictions == 0:
-            predictions += 1
-        if np.sign(true_label) == np.sign(predictions):
-            correct_total += 1
-    #    d_print(str(predictions) + ", " + str(true_label) + ", " + str(np.sign(true_label) == np.sign(predictions)))
-    return (float(correct_total) / float(y_validate.shape[0]))
-
 def delete_tree(root):
     if root.Left != None:
         delete_tree(root.Left)
     if root.Right != None:
         delete_tree(root.Right)
     del root
-
-def train_DT(root, depth_cap=maximum_depth, plot=False, proc=False):
-    root = train(root, depth_cap, random=False, plot=plot, proc=proc)
-    # Print the tree:
-    print_tree(root)
-    d_print("Reading in validation Data...")
-    # plot the tree:
-    x_validate, y_validate = get_data(path+validation+format, test=False)
-    train_accuracy = validate(root.State.X, root.State.Y, root, plot=PLOT, proc=MULTIPROC)
-    print("Training accuracy is: " + str(train_accuracy) + ".")
-    valid_accuracy = validate(x_validate, y_validate, root, plot=PLOT, proc=MULTIPROC)
-    print("Validation accuracy is: " + str(valid_accuracy) + ".")
-    return train_accuracy, valid_accuracy
-
-def train_RF(root, depth_cap=maximum_depth, local_tree_count=RF_tree_count, plot=False, proc=False):
-    roots = []
-    x_train = root.State.X
-    y_train = root.State.Y
-    global feature_list
-    global node_count
-    feature_list = []
-    for i in range(0,local_tree_count):
-        node_count = 0
-        if (i+1) % 10 == 1 and (i+1) != 11:
-            d_print("Training " + str(i+1) + "st tree")
-        elif (i+1) % 10 == 2 and (i+1) != 12:
-            d_print("Training " + str(i+1) + "nd tree")
-        elif (i+1) % 10 == 3 and (i+1) != 13:
-            d_print("Training " + str(i+1) + "rd tree")
-        else:
-            d_print("Training " + str(i+1) + "th tree")
-        X, Y = sample(root.State.X, root.State.Y)
-        root_data = C(Y) #root.State.Y)
-        root_state = State(X=X, Y=Y) #State(X=root.State.X, Y=root.State.Y)
-        tmp_root = Node(Data=root_data, State=root_state, Condition=None, Parent=None, Left=None, Right=None)
-        roots.append(tmp_root)
-        roots[i] = train(roots[i], depth_cap, random=True, plot=plot, proc=proc)
-    for i in roots:
-        #print_tree(i)
-        accuracy = validate(root.State.X, root.State.Y, i, plot=plot, proc=proc)
-        d_print("Indovidual tree accuracy is: "+ str(accuracy) + ".")
-    x_validate, y_validate = get_data(path+validation+format, test=False)
-    train_accuracy = validate_rf(root.State.X, root.State.Y, roots, plot=plot, proc=proc)
-    print("Train accuracy is: "+ str(train_accuracy) + ".")
-    valid_accuracy = validate_rf(x_validate, y_validate, roots, plot=plot, proc=proc)
-    print("Validation accuracy is: "+ str(valid_accuracy) + ".")
-    if proc:
-        global multi_output
-        data_point = Result(ID=local_tree_count, TA=train_accuracy, VA=valid_accuracy)
-        d_print(data_point)
-        multi_output.put(data_point)
-    return train_accuracy, valid_accuracy
-
-def sample(x, y):
-    size = x.shape[0]
-    inds = np.arange(size)
-    sampled = np.random.choice(inds, size=size, replace=True)
-    return x[sampled, :], y[sampled]
 
 def validate_adab(x_validate, y_validate, root, plot=PLOT, proc=MULTIPROC):
     # Get the tree
@@ -487,7 +404,8 @@ def main():
     # Part 3: AdaBoost
     L = [5]
     num_rows = x_train.shape[0]
-    D = np.ones(num_rows) * 1.0 / num_rows
+    print "Number of rows", num_rows
+    D = np.ones(num_rows) * 1.0 / float(num_rows)
     train_accuracies = []
     valid_accuracies = []
     out = []
@@ -516,15 +434,16 @@ def main():
                 else:
                     D[i] = math.exp(alpha) * D[i]
             sum_D = float(sum(D))
-            D=[d / sum_D for d in D]
+            D=[float(d) / sum_D for d in D]
 
+            d_print(str(k)+"alpha: " + str(alpha))
             out.append((root,alpha))
             d_print(str(k)+": Training took: " + str(end - start) + " seconds")
             d_print("Training accuracy: " + str(1 - error))
 
         print "Start validation"
-        x_validate, y_validate = get_data(path+validation+format, test=False)
-        error = adaboost_predict(x_validate, y_validate, root, out)
+        #x_validate, y_validate = get_data(path+validation+format, test=False)
+        error = adaboost_predict(x_train, y_train, root, out)
         d_print("Validation accuracy: " + str(1 - error))
     #cleaning up
     d_print("\n___\nCleaning up ...")
