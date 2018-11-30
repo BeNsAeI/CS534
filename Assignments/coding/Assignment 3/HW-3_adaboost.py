@@ -358,13 +358,16 @@ def adaboost_error(x_validate, y_validate, root, weights):
         if np.sign(true_label) == np.sign(prediction):
             bool_prediciton.append(True)
         else:
-            error += weight
+            error += abs(weight)
             bool_prediciton.append(False)
     d_print ("errors made: " + str(bool_prediciton.count(False)))
     d_print ("error: " + str(error))
-    return error, bool_prediciton
+    if error == 0:
+        error = 0.0000000001
+    return (float(error)/float(y_validate.shape[0])), bool_prediciton
 
-def adaboost_predict(x_validate, y_validate, root, model):
+def adaboost_predict(x_validate, y_validate, model):
+    print [str(id(x)) + " " + str(y) for (x, y) in model]
     error = 0
     predicted=list()
     predicted_all=list()
@@ -373,11 +376,24 @@ def adaboost_predict(x_validate, y_validate, root, model):
         for tree_alpha in model:
             tree=tree_alpha[0]
             alpha = tree_alpha[1]
-            prediction += alpha * walk(root, row, true_label)
+            #print_tree(tree)
+            p = walk(tree, row, true_label)
+            prediction += alpha * p
+
         if np.sign(true_label) != np.sign(prediction):
             error += 1
     d_print ("errors made: " + str(error))
-    return (error/float(y_validate.shape[0]))
+    return (float(error)/float(y_validate.shape[0]))
+
+def validate(x_validate, y_validate, root):
+    # Get the tree
+    true_label = None
+    correct_total = 0
+    for true_label, row in zip(y_validate,x_validate):
+        prediction = walk(root, row, true_label)
+        if np.sign(true_label) == np.sign(prediction):
+            correct_total += 1
+    return (float(correct_total) / float(y_validate.shape[0]))
 
 def main():
     #Parsing arguments:
@@ -408,16 +424,17 @@ def main():
     D = np.ones(num_rows) * 1.0 / float(num_rows)
     train_accuracies = []
     valid_accuracies = []
+    x_validate, y_validate = get_data(path+validation+format, test=False)
     out = []
     for n in L:
         for k in range(n):
             weighted_dataset = []
             for i in range(num_rows):
-                weighted_dataset.append(x_train[i] * D[i])
+                weighted_dataset.append(y_train[i] * D[i])
             weighted_dataset = np.asarray(weighted_dataset)
 
-            root_data = C(y_train)
-            root_state = State(X=weighted_dataset, Y=y_train)
+            root_data = C(weighted_dataset)
+            root_state = State(X=x_train, Y=weighted_dataset)
             d_print("Initiating the Node")
             root = Node(Data=root_data, State=root_state, Condition=None, Parent=None, Left=None, Right=None)
 
@@ -443,7 +460,7 @@ def main():
 
         d_print("Start validation")
         #x_validate, y_validate = get_data(path+validation+format, test=False)
-        error = adaboost_predict(x_train, y_train, root, out)
+        error = adaboost_predict(x_validate, y_validate, out)
         d_print("Validation accuracy: " + str(1 - error))
     #cleaning up
     d_print("\n___\nCleaning up ...")
