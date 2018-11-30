@@ -360,8 +360,8 @@ def adaboost_error(x_validate, y_validate, root, weights):
         else:
             error += weight
             bool_prediciton.append(False)
-    print "errors made: ", bool_prediciton.count(False)
-    print "error: ", error
+    d_print ("errors made: " + str(bool_prediciton.count(False)))
+    d_print ("error: " + str(error))
     return error, bool_prediciton
 
 def adaboost_predict(x_validate, y_validate, root, model):
@@ -376,7 +376,7 @@ def adaboost_predict(x_validate, y_validate, root, model):
             prediction += alpha * walk(root, row, true_label)
         if np.sign(true_label) != np.sign(prediction):
             error += 1
-    print "errors made: ", error
+    d_print ("errors made: " + str(error))
     return (error/float(y_validate.shape[0]))
 
 def main():
@@ -404,7 +404,7 @@ def main():
     # Part 3: AdaBoost
     L = [5]
     num_rows = x_train.shape[0]
-    print "Number of rows", num_rows
+    d_print ("Number of rows" +  str(num_rows))
     D = np.ones(num_rows) * 1.0 / float(num_rows)
     train_accuracies = []
     valid_accuracies = []
@@ -441,7 +441,7 @@ def main():
             d_print(str(k)+": Training took: " + str(end - start) + " seconds")
             d_print("Training accuracy: " + str(1 - error))
 
-        print "Start validation"
+        d_print("Start validation")
         #x_validate, y_validate = get_data(path+validation+format, test=False)
         error = adaboost_predict(x_train, y_train, root, out)
         d_print("Validation accuracy: " + str(1 - error))
