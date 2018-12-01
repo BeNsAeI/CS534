@@ -367,7 +367,6 @@ def adaboost_error(x_validate, y_validate, root, weights):
     return (float(error)/float(y_validate.shape[0])), bool_prediciton
 
 def adaboost_predict(x_validate, y_validate, model):
-    print [str(id(x)) + " " + str(y) for (x, y) in model]
     error = 0
     predicted=list()
     predicted_all=list()
@@ -418,7 +417,6 @@ def main():
     global feature_list
     # Part 1: Train Trees with depth varying from 1 to 32 for plotting purposes
     # Part 3: AdaBoost
-    L = [5]
     num_rows = x_train.shape[0]
     d_print ("Number of rows" +  str(num_rows))
     D = np.ones(num_rows) * 1.0 / float(num_rows)
@@ -426,42 +424,51 @@ def main():
     valid_accuracies = []
     x_validate, y_validate = get_data(path+validation+format, test=False)
     out = []
-    for n in L:
-        for k in range(n):
-            weighted_dataset = []
-            for i in range(num_rows):
-                weighted_dataset.append(y_train[i] * D[i])
-            weighted_dataset = np.asarray(weighted_dataset)
+    for k in range(20):
+        weighted_dataset = []
+        for i in range(num_rows):
+            weighted_dataset.append(y_train[i] * D[i])
+        weighted_dataset = np.asarray(weighted_dataset)
 
-            root_data = C(weighted_dataset)
-            root_state = State(X=x_train, Y=weighted_dataset)
-            d_print("Initiating the Node")
-            root = Node(Data=root_data, State=root_state, Condition=None, Parent=None, Left=None, Right=None)
+        root_data = C(weighted_dataset)
+        root_state = State(X=x_train, Y=weighted_dataset)
+        d_print("Initiating the Node")
+        root = Node(Data=root_data, State=root_state, Condition=None, Parent=None, Left=None, Right=None)
 
-            start = time.time()
-            root = train(root, 9, random=False, plot=PLOT, proc=MULTIPROC)
-            end = time.time()
-            error, bool_prediction = adaboost_error(root.State.X, root.State.Y, root, D)
+        start = time.time()
+        root = train(root, 9, random=False, plot=PLOT, proc=MULTIPROC)
+        end = time.time()
+        error, bool_prediction = adaboost_error(x_train, y_train, root, D)
 
-            alpha=0.5 * math.log((1-error)/float(error))
+        alpha=0.5 * math.log((1-error)/float(error))
 
-            for i in range(len(D)):
-                if bool_prediction[i]==True:
-                    D[i] = math.exp(-1 * alpha) * D[i]
-                else:
-                    D[i] = math.exp(alpha) * D[i]
-            sum_D = float(sum(D))
-            D=[float(d) / sum_D for d in D]
+        for i in range(len(D)):
+            if bool_prediction[i]==True:
+                D[i] = math.exp(-1 * alpha) * D[i]
+            else:
+                D[i] = math.exp(alpha) * D[i]
+        sum_D = float(sum(D))
+        D=[float(d) / sum_D for d in D]
 
-            d_print(str(k)+"alpha: " + str(alpha))
-            out.append((root,alpha))
-            d_print(str(k)+": Training took: " + str(end - start) + " seconds")
-            d_print("Training accuracy: " + str(1 - error))
+        d_print(str(k)+"alpha: " + str(alpha))
+        out.append((root,alpha))
+        d_print(str(k)+": Training took: " + str(end - start) + " seconds")
+        d_print("Training accuracy: " + str(1 - error))
 
+    t_acc = []
+    v_acc = []
+
+    for i in range(20):
         d_print("Start validation")
         #x_validate, y_validate = get_data(path+validation+format, test=False)
-        error = adaboost_predict(x_validate, y_validate, out)
-        d_print("Validation accuracy: " + str(1 - error))
+        model = out[:i+1]
+        t_error = adaboost_predict(x_train, y_train, model)
+        v_error = adaboost_predict(x_validate, y_validate, model)
+        t_acc.append(1-t_error)
+        v_acc.append(1-v_error)
+        d_print("Training accuracy: " + str(1 - t_error))
+        d_print("Validation accuracy: " + str(1 - v_error))
+    plot_accuracies(t_acc, v_acc, str(666))
     #cleaning up
     d_print("\n___\nCleaning up ...")
     del root_data
