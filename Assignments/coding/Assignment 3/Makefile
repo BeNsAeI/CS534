@@ -1,5 +1,6 @@
 all:
-	make debug
+	python3 HW-3.py --plot --multi_process
+	python3 HW-3_adaboost.py --plot
 flip:
 	python3 HW-3.py
 flip_multi:
