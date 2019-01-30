@@ -4,4 +4,60 @@ Topic:
   - cheatsheet:
   - Done / not Done
 _________
-
+NeuralNets:
+ - Functions:
+  - StepFunction
+   - x>0 -> 1, Otherwise->0
+  - sigmoid
+   - \sigma(x) = frac{1}{(1+e^{-x})}
+  - tanh
+   -  tanh(x) = 2\sigma(2x)-1
+  - Rectified linear unit (ReLu)
+   - f(x) = max(0,x)
+____
+ - Or
+  - 2 neurons 1,1
+  - bias = -0.5
+____
+ - And
+  - 2 neurons 1,1
+  - bias = -1.5
+____
+ - Loss function
+  - Regression:
+   - sums of squared errors
+   - L(w) = \sum^n_{i=1} (\hat{y}(x_i,w) - y_i)^2
+   - Gradient decent -> weights
+   - chain rule:
+   - frac{df}{dx} = \frac{df}{dy} \frac{dy}{dx}
+  - Classification:
+   - Negative log-likelihood
+____
+ - Activation function:
+  - \sigma(W_n . A^T) # a_i are all computed using same equation (nest)
+  - W_n weight of each line that leads to nth neuron
+  - A: output of every neuron which connect to nth neuron
+  - A includes Bias: 1
+____
+ - Training:
+  - compute activation and feed forward
+  - Compute loss and adjust weights
+  - Propegate down (repeat for each hidden layer node
+____
+ - Derivative of \sigma(x):
+  - \sigma(x)(1-\sigma(x))
+____
+ - Gradient of loss (Delta rule):
+  - (\hat{y_i}-y_i)\hat(y_i)(1-\hat{y_i}).a_{jth node}
+  - i is the ith prediction, in sum of squared errors i=1 to N
+____
+ - SoftMax: Probability of each class (which bellcurve it belongs to)
+  - P(y = k|X) = frax{exp a_k}{\sum^k_i=1 exp a_i}
+_________
+_________
+_________
+_________
+_________
+_________
+_________
+_________
